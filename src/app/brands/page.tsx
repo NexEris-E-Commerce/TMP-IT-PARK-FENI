@@ -1,15 +1,16 @@
 import Link from "next/link";
 import { brands } from "@/lib/data/brands";
-import { products } from "@/lib/data/products";
+import { getAllProducts } from "@/lib/products-repo";
 import { Container } from "@/components/ui/Container";
 import { BrandTile } from "@/components/ui/BrandTile";
 import { ChevronRight } from "@/components/ui/icons";
 
 export const metadata = { title: "Brands" };
 
-export default function BrandsPage() {
+export default async function BrandsPage() {
   const items = brands.filter((b) => b.enabled !== false);
-  const countFor = (slug: string) => products.filter((p) => p.brand === slug).length;
+  const allProducts = await getAllProducts();
+  const countFor = (slug: string) => allProducts.filter((p) => p.brand === slug).length;
 
   return (
     <Container className="py-8 lg:py-10">

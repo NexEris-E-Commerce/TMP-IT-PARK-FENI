@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getProduct, relatedProducts } from "@/lib/data/products";
+import { getAllProducts } from "@/lib/products-repo";
 import { brandName } from "@/lib/data/brands";
 import { getCategory } from "@/lib/data/categories";
 import { discountPercent, stockState } from "@/lib/types";
@@ -23,7 +24,8 @@ import {
 
 export async function generateMetadata({ params }: PageProps<"/product/[slug]">) {
   const { slug } = await params;
-  const p = getProduct(slug);
+  const allProducts = await getAllProducts();
+  const p = getProduct(slug, allProducts);
   return p
     ? { title: p.name, description: p.keySpec ?? undefined }
     : { title: "Product Not Found" };
@@ -31,13 +33,14 @@ export async function generateMetadata({ params }: PageProps<"/product/[slug]">)
 
 export default async function ProductPage({ params }: PageProps<"/product/[slug]">) {
   const { slug } = await params;
-  const product = getProduct(slug);
+  const allProducts = await getAllProducts();
+  const product = getProduct(slug, allProducts);
   if (!product) notFound();
 
   const cat = getCategory(product.category);
   const off = discountPercent(product);
   const stock = stockState(product);
-  const related = relatedProducts(product);
+  const related = relatedProducts(product, 4, allProducts);
   const savings = product.regularPrice ? product.regularPrice - product.price : 0;
 
   return (

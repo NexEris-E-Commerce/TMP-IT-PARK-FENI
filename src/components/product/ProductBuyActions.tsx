@@ -1,22 +1,26 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import type { Product } from "@/lib/types";
 import { stockState } from "@/lib/types";
 import { Cart, Heart, Plus, Minus, Check } from "../ui/icons";
 import { cn } from "@/lib/cn";
+import { useCart } from "@/lib/cart-context";
+import { useWishlist } from "@/lib/wishlist-context";
 
 /**
  * Product detail buy box: quantity stepper + add-to-cart / buy-now / wishlist.
- * Local state gives real feedback now; wires into the cart & checkout flow in
- * Phase 3.
  */
 export function ProductBuyActions({ product }: { product: Product }) {
+  const router = useRouter();
+  const { addItem } = useCart();
+  const { isWished, toggle: toggleWishlist } = useWishlist();
+  const wished = isWished(product.id);
   const out = stockState(product) === "out";
   const max = Math.max(1, product.stock);
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
-  const [wished, setWished] = useState(false);
 
   return (
     <div className="space-y-4">
@@ -53,6 +57,7 @@ export function ProductBuyActions({ product }: { product: Product }) {
           type="button"
           disabled={out}
           onClick={() => {
+            addItem(product, qty);
             setAdded(true);
             window.setTimeout(() => setAdded(false), 1600);
           }}
@@ -74,13 +79,17 @@ export function ProductBuyActions({ product }: { product: Product }) {
         <button
           type="button"
           disabled={out}
+          onClick={() => {
+            addItem(product, qty);
+            router.push("/checkout");
+          }}
           className="inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-accent-600 text-sm font-bold text-white shadow-[0_10px_22px_-8px_rgba(106,60,239,0.6)] transition hover:bg-accent-700 active:scale-[0.99] focus-ring disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none"
         >
           Buy Now
         </button>
         <button
           type="button"
-          onClick={() => setWished((w) => !w)}
+          onClick={() => toggleWishlist(product)}
           aria-pressed={wished}
           aria-label={wished ? "Remove from wishlist" : "Add to wishlist"}
           className={cn(

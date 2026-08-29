@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { dealProducts } from "@/lib/data/products";
+import { getAllProducts } from "@/lib/products-repo";
 import { ProductGrid } from "../product/ProductGrid";
 import { Countdown } from "./Countdown";
 import { ArrowRight } from "../ui/icons";
 
-export function DealsOfDay() {
-  const items = dealProducts(8);
+export async function DealsOfDay() {
+  const allProducts = await getAllProducts();
+  const items = dealProducts(8, allProducts);
   if (items.length === 0) return null;
 
   return (

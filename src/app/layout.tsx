@@ -5,6 +5,9 @@ import { site } from "@/lib/site";
 import { TopBar } from "@/components/layout/TopBar";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { CartProvider } from "@/lib/cart-context";
+import { WishlistProvider } from "@/lib/wishlist-context";
+import { CompareProvider } from "@/lib/compare-context";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -67,10 +70,16 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${inter.variable} ${display.variable} ${bengali.variable} h-full`}
     >
       <body className="flex min-h-full flex-col">
-        <TopBar />
-        <Header />
-        <main className="flex-1">{children}</main>
-        <Footer />
+        <CartProvider>
+          <WishlistProvider>
+            <CompareProvider>
+              <TopBar />
+              <Header />
+              <main className="flex-1">{children}</main>
+              <Footer />
+            </CompareProvider>
+          </WishlistProvider>
+        </CartProvider>
       </body>
     </html>
   );

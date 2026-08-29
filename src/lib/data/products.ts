@@ -1,440 +1,46 @@
 import type { Product } from "../types";
 
 /**
- * Seed catalog for the storefront (Phase 1–3). Prices are in BDT and reflect
- * realistic Feni-market pricing. In Phase 4 this module is replaced by
- * Prisma-backed queries that return the same `Product` shape.
+ * Intentionally empty. All real product data lives in Supabase (see
+ * `src/lib/products-repo.ts`) — manage products from /admin or the
+ * Supabase Table Editor. This file only exists so `shop.ts` and
+ * `pc-builder.ts` have a safe empty default for their `source` parameter;
+ * it is never shown to shoppers.
  */
-export const products: Product[] = [
-  // ───────────────────────── Laptops ─────────────────────────
-  {
-    id: "p-vivobook15",
-    slug: "asus-vivobook-15-i5",
-    name: "ASUS Vivobook 15 Core i5 Laptop",
-    brand: "asus",
-    category: "laptop",
-    price: 62000,
-    regularPrice: 68000,
-    rating: 4.7,
-    reviewCount: 96,
-    stock: 14,
-    keySpec: 'Core i5-1235U · 8GB · 512GB SSD · 15.6" FHD',
-    warranty: "2 Years Official Warranty",
-    isFeatured: true,
-    specs: [
-      { label: "Processor", value: "Intel Core i5-1235U" },
-      { label: "RAM", value: "8GB DDR4" },
-      { label: "Storage", value: "512GB NVMe SSD" },
-      { label: "Display", value: '15.6" FHD (1920×1080)' },
-    ],
-  },
-  {
-    id: "p-pavilion14",
-    slug: "hp-pavilion-14-i5-13th",
-    name: "HP Pavilion 14 Core i5 13th Gen",
-    brand: "hp",
-    category: "laptop",
-    price: 78500,
-    regularPrice: 84000,
-    rating: 4.6,
-    reviewCount: 61,
-    stock: 9,
-    keySpec: 'Core i5-1340P · 16GB · 512GB SSD · 14" FHD',
-    warranty: "2 Years Official Warranty",
-  },
-  {
-    id: "p-ideapad3",
-    slug: "lenovo-ideapad-slim-3-ryzen5",
-    name: "Lenovo IdeaPad Slim 3 Ryzen 5",
-    brand: "lenovo",
-    category: "laptop",
-    price: 54900,
-    regularPrice: 59000,
-    rating: 4.5,
-    reviewCount: 143,
-    stock: 21,
-    keySpec: 'Ryzen 5 7530U · 8GB · 512GB SSD · 15.6"',
-    warranty: "2 Years Official Warranty",
-    isBestSeller: true,
-  },
-  {
-    id: "p-inspiron15",
-    slug: "dell-inspiron-15-i3-12th",
-    name: "Dell Inspiron 15 Core i3 12th Gen",
-    brand: "dell",
-    category: "laptop",
-    price: 46500,
-    regularPrice: 49900,
-    rating: 4.4,
-    reviewCount: 52,
-    stock: 12,
-    keySpec: 'Core i3-1215U · 8GB · 256GB SSD · 15.6"',
-    warranty: "2 Years Official Warranty",
-  },
-
-  // ───────────────────────── Desktops ─────────────────────────
-  {
-    id: "p-home-desktop",
-    slug: "itpark-home-desktop-i3",
-    name: "IT PARK Home Desktop i3 12th Gen",
-    brand: "it-park",
-    category: "desktop",
-    price: 32000,
-    rating: 4.6,
-    reviewCount: 38,
-    stock: 18,
-    keySpec: "Core i3-12100 · 8GB · 256GB SSD · H610",
-    warranty: "1 Year Service Warranty",
-  },
-  {
-    id: "p-office-pro",
-    slug: "itpark-office-pro-i5",
-    name: "IT PARK Office Pro i5 Desktop",
-    brand: "it-park",
-    category: "desktop",
-    price: 48500,
-    regularPrice: 52000,
-    rating: 4.7,
-    reviewCount: 74,
-    stock: 15,
-    keySpec: "Core i5-12400 · 16GB · 512GB SSD · B660",
-    warranty: "1 Year Service Warranty",
-    isBestSeller: true,
-  },
-
-  // ───────────────────────── Gaming ─────────────────────────
-  {
-    id: "p-gaming-4060",
-    slug: "itpark-gaming-rtx-4060-build",
-    name: "IT PARK Gaming RTX 4060 Build",
-    brand: "it-park",
-    category: "gaming",
-    price: 112000,
-    regularPrice: 125000,
-    rating: 4.9,
-    reviewCount: 57,
-    stock: 6,
-    keySpec: "Core i5-13400F · RTX 4060 8GB · 16GB · 1TB SSD",
-    warranty: "1 Year Service + Parts Warranty",
-    isFeatured: true,
-    isBestSeller: true,
-    isDeal: true,
-  },
-  {
-    id: "p-katana15",
-    slug: "msi-katana-15-rtx-4050",
-    name: "MSI Katana 15 Gaming Laptop RTX 4050",
-    brand: "msi",
-    category: "gaming",
-    price: 135000,
-    regularPrice: 148000,
-    rating: 4.7,
-    reviewCount: 40,
-    stock: 5,
-    keySpec: 'Core i7-13620H · RTX 4050 · 16GB · 144Hz',
-    warranty: "2 Years Official Warranty",
-  },
-
-  // ───────────────────────── Components ─────────────────────────
-  {
-    id: "p-i5-12400",
-    slug: "intel-core-i5-12400-12th-gen",
-    name: "Intel Core i5-12400 12th Gen Processor",
-    brand: "intel",
-    category: "components",
-    price: 15500,
-    regularPrice: 17200,
-    rating: 4.8,
-    reviewCount: 214,
-    stock: 32,
-    keySpec: "6 Cores · 12 Threads · up to 4.4GHz · LGA1700",
-    warranty: "3 Years Official Warranty",
-    isFeatured: true,
-    isDeal: true,
-    isBestSeller: true,
-    specs: [
-      { label: "Cores / Threads", value: "6 / 12" },
-      { label: "Base / Boost", value: "2.5GHz / 4.4GHz" },
-      { label: "Socket", value: "LGA1700" },
-      { label: "TDP", value: "65W" },
-    ],
-  },
-  {
-    id: "p-ryzen5-5600",
-    slug: "amd-ryzen-5-5600",
-    name: "AMD Ryzen 5 5600 Processor",
-    brand: "amd",
-    category: "components",
-    price: 13900,
-    regularPrice: 15500,
-    rating: 4.7,
-    reviewCount: 168,
-    stock: 24,
-    keySpec: "6 Cores · 12 Threads · up to 4.4GHz · AM4",
-    warranty: "3 Years Official Warranty",
-  },
-  {
-    id: "p-tuf-4060",
-    slug: "asus-tuf-gaming-rtx-4060",
-    name: "ASUS TUF Gaming GeForce RTX 4060",
-    brand: "asus",
-    category: "components",
-    price: 38500,
-    regularPrice: 45500,
-    rating: 4.9,
-    reviewCount: 89,
-    stock: 11,
-    keySpec: "8GB GDDR6 · DLSS 3 · 2x HDMI 2.1",
-    warranty: "3 Years Official Warranty",
-    isFeatured: true,
-    isDeal: true,
-  },
-  {
-    id: "p-b760m",
-    slug: "gigabyte-b760m-ds3h-ddr4",
-    name: "Gigabyte B760M DS3H DDR4 Motherboard",
-    brand: "gigabyte",
-    category: "components",
-    price: 13200,
-    regularPrice: 14500,
-    rating: 4.6,
-    reviewCount: 47,
-    stock: 16,
-    keySpec: "LGA1700 · DDR4 · M.2 · Micro-ATX",
-    warranty: "3 Years Official Warranty",
-  },
-  {
-    id: "p-vengeance16",
-    slug: "corsair-vengeance-16gb-ddr4-3200",
-    name: "Corsair Vengeance LPX 16GB DDR4 3200MHz",
-    brand: "corsair",
-    category: "components",
-    price: 3900,
-    regularPrice: 4600,
-    rating: 4.8,
-    reviewCount: 132,
-    stock: 3,
-    lowStockThreshold: 4,
-    keySpec: "16GB (1×16GB) · DDR4 · 3200MHz",
-    warranty: "Lifetime Warranty",
-    isDeal: true,
-  },
-  {
-    id: "p-980-1tb",
-    slug: "samsung-980-1tb-nvme-ssd",
-    name: "Samsung 980 1TB NVMe M.2 SSD",
-    brand: "samsung",
-    category: "components",
-    price: 8900,
-    regularPrice: 9900,
-    rating: 4.8,
-    reviewCount: 201,
-    stock: 20,
-    keySpec: "1TB · PCIe 3.0 · up to 3500MB/s",
-    warranty: "5 Years Official Warranty",
-    isBestSeller: true,
-  },
-  {
-    id: "p-nv2-500",
-    slug: "kingston-nv2-500gb-nvme-ssd",
-    name: "Kingston NV2 500GB NVMe SSD",
-    brand: "kingston",
-    category: "components",
-    price: 4200,
-    regularPrice: 4700,
-    rating: 4.6,
-    reviewCount: 158,
-    stock: 27,
-    keySpec: "500GB · PCIe 4.0 · up to 3500MB/s",
-    warranty: "3 Years Official Warranty",
-  },
-
-  // ───────────────────────── Monitor ─────────────────────────
-  {
-    id: "p-samsung24",
-    slug: "samsung-24-ips-fhd-75hz",
-    name: 'Samsung 24" IPS Monitor FHD 75Hz',
-    brand: "samsung",
-    category: "monitor",
-    price: 12500,
-    regularPrice: 13500,
-    rating: 4.7,
-    reviewCount: 118,
-    stock: 22,
-    keySpec: '24" · IPS · 1920×1080 · 75Hz · HDMI',
-    warranty: "3 Years Official Warranty",
-    isFeatured: true,
-    isDeal: true,
-  },
-  {
-    id: "p-msi27",
-    slug: "msi-g274f-27-165hz-gaming",
-    name: "MSI G274F 27\" 165Hz Gaming Monitor",
-    brand: "msi",
-    category: "monitor",
-    price: 26500,
-    regularPrice: 29000,
-    rating: 4.8,
-    reviewCount: 63,
-    stock: 8,
-    keySpec: '27" · IPS · 1080p · 165Hz · 1ms',
-    warranty: "3 Years Official Warranty",
-  },
-  {
-    id: "p-asus22",
-    slug: "asus-eye-care-22-fhd",
-    name: 'ASUS Eye Care 22" FHD Monitor',
-    brand: "asus",
-    category: "monitor",
-    price: 10900,
-    regularPrice: 11900,
-    rating: 4.5,
-    reviewCount: 44,
-    stock: 0,
-    keySpec: '21.5" · IPS · 1080p · 75Hz · Flicker-Free',
-    warranty: "3 Years Official Warranty",
-  },
-
-  // ───────────────────────── Printer ─────────────────────────
-  {
-    id: "p-l3210",
-    slug: "epson-l3210-ink-tank",
-    name: "Epson L3210 All-in-One Ink Tank Printer",
-    brand: "epson",
-    category: "printer",
-    price: 16500,
-    regularPrice: 17500,
-    rating: 4.8,
-    reviewCount: 176,
-    stock: 19,
-    keySpec: "Print · Scan · Copy · Ink Tank",
-    warranty: "1 Year Official Warranty",
-    isFeatured: true,
-    isDeal: true,
-  },
-  {
-    id: "p-m111",
-    slug: "hp-laserjet-m111a",
-    name: "HP LaserJet M111a Printer",
-    brand: "hp",
-    category: "printer",
-    price: 13900,
-    regularPrice: 15000,
-    rating: 4.6,
-    reviewCount: 71,
-    stock: 13,
-    keySpec: "Mono Laser · 20ppm · USB",
-    warranty: "1 Year Official Warranty",
-  },
-
-  // ───────────────────────── Networking ─────────────────────────
-  {
-    id: "p-archer-c6",
-    slug: "tp-link-archer-c6-ac1200",
-    name: "TP-Link Archer C6 AC1200 Router",
-    brand: "tp-link",
-    category: "networking",
-    price: 2800,
-    regularPrice: 3500,
-    rating: 4.5,
-    reviewCount: 289,
-    stock: 40,
-    keySpec: "AC1200 · Dual-Band · 4 Antenna · MU-MIMO",
-    warranty: "3 Years Official Warranty",
-    isFeatured: true,
-    isDeal: true,
-    isBestSeller: true,
-  },
-  {
-    id: "p-sg1008d",
-    slug: "tp-link-tl-sg1008d-gigabit-switch",
-    name: "TP-Link TL-SG1008D 8-Port Gigabit Switch",
-    brand: "tp-link",
-    category: "networking",
-    price: 1650,
-    regularPrice: 1900,
-    rating: 4.7,
-    reviewCount: 96,
-    stock: 33,
-    keySpec: "8-Port · Gigabit · Plug & Play",
-    warranty: "Lifetime Warranty",
-  },
-
-  // ───────────────────────── Accessories ─────────────────────────
-  {
-    id: "p-logi-kb",
-    slug: "logitech-mechanical-gaming-keyboard",
-    name: "Logitech Mechanical Gaming Keyboard",
-    brand: "logitech",
-    category: "accessories",
-    price: 4200,
-    regularPrice: 4800,
-    rating: 4.6,
-    reviewCount: 154,
-    stock: 26,
-    keySpec: "Mechanical · RGB · Anti-Ghosting",
-    warranty: "2 Years Official Warranty",
-    isFeatured: true,
-    isDeal: true,
-  },
-  {
-    id: "p-g102",
-    slug: "logitech-g102-lightsync",
-    name: "Logitech G102 LIGHTSYNC Gaming Mouse",
-    brand: "logitech",
-    category: "accessories",
-    price: 2150,
-    regularPrice: 2500,
-    rating: 4.7,
-    reviewCount: 312,
-    stock: 45,
-    keySpec: "8000 DPI · RGB · 6 Buttons",
-    warranty: "2 Years Official Warranty",
-    isBestSeller: true,
-  },
-  {
-    id: "p-hs55",
-    slug: "corsair-hs55-stereo-headset",
-    name: "Corsair HS55 Stereo Gaming Headset",
-    brand: "corsair",
-    category: "accessories",
-    price: 5900,
-    regularPrice: 6500,
-    rating: 4.6,
-    reviewCount: 87,
-    stock: 17,
-    keySpec: "50mm Drivers · Detachable Mic · 3.5mm",
-    warranty: "2 Years Official Warranty",
-  },
-];
+export const products: Product[] = [];
 
 // ───────────────────────── Query helpers ─────────────────────────
+// Each accepts an optional `source` array (defaults to the static demo
+// catalog). Pages fetch live products from Supabase via
+// `src/lib/products-repo.ts` and pass them in here, so the exact same
+// derivation logic works whether the source is the static seed data or
+// the real database.
 
-export function getProduct(slug: string): Product | undefined {
-  return products.find((p) => p.slug === slug);
+export function getProduct(slug: string, source: Product[] = products): Product | undefined {
+  return source.find((p) => p.slug === slug);
 }
 
-export function productsByCategory(categorySlug: string): Product[] {
-  return products.filter((p) => p.category === categorySlug);
+export function productsByCategory(categorySlug: string, source: Product[] = products): Product[] {
+  return source.filter((p) => p.category === categorySlug);
 }
 
-export function featuredProducts(limit?: number): Product[] {
-  const list = products.filter((p) => p.isFeatured);
+export function featuredProducts(limit?: number, source: Product[] = products): Product[] {
+  const list = source.filter((p) => p.isFeatured);
   return limit ? list.slice(0, limit) : list;
 }
 
-export function bestSellers(limit?: number): Product[] {
-  const list = products.filter((p) => p.isBestSeller);
+export function bestSellers(limit?: number, source: Product[] = products): Product[] {
+  const list = source.filter((p) => p.isBestSeller);
   return limit ? list.slice(0, limit) : list;
 }
 
-export function dealProducts(limit?: number): Product[] {
-  const list = products.filter((p) => p.isDeal);
+export function dealProducts(limit?: number, source: Product[] = products): Product[] {
+  const list = source.filter((p) => p.isDeal);
   return limit ? list.slice(0, limit) : list;
 }
 
-export function relatedProducts(product: Product, limit = 4): Product[] {
-  return products
+export function relatedProducts(product: Product, limit = 4, source: Product[] = products): Product[] {
+  return source
     .filter((p) => p.category === product.category && p.id !== product.id)
     .slice(0, limit);
 }

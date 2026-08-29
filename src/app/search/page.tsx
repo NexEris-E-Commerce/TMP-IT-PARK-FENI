@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Container } from "@/components/ui/Container";
 import { Search as SearchIcon } from "@/components/ui/icons";
 import { parseShopQuery, runShopQuery } from "@/lib/shop";
+import { getAllProducts } from "@/lib/products-repo";
 import { CatalogView } from "@/components/shop/CatalogView";
 
 export const metadata = { title: "Search" };
@@ -35,7 +36,8 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
     );
   }
 
-  const result = runShopQuery(query);
+  const allProducts = await getAllProducts();
+  const result = runShopQuery(query, allProducts);
 
   return (
     <CatalogView

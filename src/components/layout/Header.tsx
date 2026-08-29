@@ -22,6 +22,9 @@ import {
   Phone,
 } from "../ui/icons";
 import { cn } from "@/lib/cn";
+import { useCart } from "@/lib/cart-context";
+import { useWishlist } from "@/lib/wishlist-context";
+import { useCompare } from "@/lib/compare-context";
 
 const actionLinks = [
   { href: "/compare", label: "Compare", Icon: Compare },
@@ -31,6 +34,9 @@ const actionLinks = [
 
 export function Header() {
   const pathname = usePathname();
+  const { count } = useCart();
+  const { count: wishCount } = useWishlist();
+  const { count: compareCount } = useCompare();
   const [scrolled, setScrolled] = useState(false);
   const [drawer, setDrawer] = useState(false);
   const [shopOpen, setShopOpen] = useState(false);
@@ -91,19 +97,27 @@ export function Header() {
 
           <div className="ml-auto flex items-center gap-1 lg:gap-2">
             <div className="hidden items-center gap-1 lg:flex">
-              {actionLinks.map(({ href, label, Icon }) => (
-                <Link
-                  key={href}
-                  href={href}
-                  aria-label={label}
-                  className="group relative grid h-11 w-11 place-items-center rounded-xl text-ink-soft transition hover:bg-muted hover:text-brand-700"
-                >
-                  <Icon size={21} />
-                  <span className="pointer-events-none absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-ink px-2 py-1 text-[11px] font-medium text-white opacity-0 transition group-hover:opacity-100">
-                    {label}
-                  </span>
-                </Link>
-              ))}
+              {actionLinks.map(({ href, label, Icon }) => {
+                const badge = href === "/wishlist" ? wishCount : href === "/compare" ? compareCount : 0;
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    aria-label={label}
+                    className="group relative grid h-11 w-11 place-items-center rounded-xl text-ink-soft transition hover:bg-muted hover:text-brand-700"
+                  >
+                    <Icon size={21} />
+                    {badge > 0 && (
+                      <span className="absolute -right-0.5 -top-0.5 grid h-4.5 min-w-4.5 place-items-center rounded-full bg-accent-600 px-1 text-[10px] font-bold text-white">
+                        {badge > 99 ? "99+" : badge}
+                      </span>
+                    )}
+                    <span className="pointer-events-none absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-ink px-2 py-1 text-[11px] font-medium text-white opacity-0 transition group-hover:opacity-100">
+                      {label}
+                    </span>
+                  </Link>
+                );
+              })}
             </div>
             <Link
               href="/cart"
@@ -111,6 +125,11 @@ export function Header() {
               className="relative grid h-11 w-11 place-items-center rounded-xl bg-brand-50 text-brand-700 transition hover:bg-brand-100"
             >
               <Cart size={21} />
+              {count > 0 && (
+                <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-accent-600 px-1 text-[11px] font-bold text-white">
+                  {count > 99 ? "99+" : count}
+                </span>
+              )}
             </Link>
           </div>
         </Container>

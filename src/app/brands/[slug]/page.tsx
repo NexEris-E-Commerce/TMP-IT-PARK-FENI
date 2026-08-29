@@ -1,5 +1,5 @@
 import { getBrand, brandName } from "@/lib/data/brands";
-import { products } from "@/lib/data/products";
+import { getAllProducts } from "@/lib/products-repo";
 import { ProductListing } from "@/components/product/ProductListing";
 
 export async function generateMetadata({ params }: PageProps<"/brands/[slug]">) {
@@ -11,7 +11,8 @@ export default async function BrandPage({ params }: PageProps<"/brands/[slug]">)
   const { slug } = await params;
   const brand = getBrand(slug);
   const name = brand?.name ?? brandName(slug);
-  const list = products.filter((p) => p.brand === slug);
+  const allProducts = await getAllProducts();
+  const list = allProducts.filter((p) => p.brand === slug);
 
   return (
     <ProductListing

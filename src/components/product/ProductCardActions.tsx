@@ -3,14 +3,15 @@
 import { useState } from "react";
 import type { Product } from "@/lib/types";
 import { stockState } from "@/lib/types";
-import { Cart, Heart, Check } from "../ui/icons";
+import { Cart, Heart, Check, Compare } from "../ui/icons";
 import { cn } from "@/lib/cn";
+import { useCart } from "@/lib/cart-context";
+import { useWishlist } from "@/lib/wishlist-context";
+import { useCompare } from "@/lib/compare-context";
 
 /**
  * Interactive card controls: wishlist toggle + add-to-cart.
- * Local state gives real feedback now; both wire into the cart/wishlist
- * stores in Phase 3. Kept in its own client island so the card stays a
- * server component.
+ * Kept in its own client island so the card stays a server component.
  */
 export function ProductCardActions({
   product,
@@ -19,15 +20,25 @@ export function ProductCardActions({
   product: Product;
   className?: string;
 }) {
-  const [wished, setWished] = useState(false);
+  const { addItem } = useCart();
+  const { isWished, toggle } = useWishlist();
+  const { isComparing, toggle: toggleCompare } = useCompare();
+  const wished = isWished(product.id);
+  const comparing = isComparing(product.id);
   const [added, setAdded] = useState(false);
+  const [compareError, setCompareError] = useState<string | null>(null);
   const out = stockState(product) === "out";
 
   return (
-    <div className={cn("flex items-center gap-1.5", className)}>
+    <div className={cn("relative flex items-center gap-1.5", className)}>
+      {compareError && (
+        <p className="absolute -top-9 left-0 z-10 w-max max-w-[220px] rounded-lg bg-ink px-2.5 py-1.5 text-[11px] font-medium text-white shadow-lg">
+          {compareError}
+        </p>
+      )}
       <button
         type="button"
-        onClick={() => setWished((w) => !w)}
+        onClick={() => toggle(product)}
         aria-pressed={wished}
         aria-label={wished ? "Remove from wishlist" : "Add to wishlist"}
         className={cn(
@@ -41,8 +52,29 @@ export function ProductCardActions({
       </button>
       <button
         type="button"
+        onClick={() => {
+          const result = toggleCompare(product);
+          if (!result.ok) {
+            setCompareError(result.reason ?? "Couldn't add to compare.");
+            window.setTimeout(() => setCompareError(null), 2400);
+          }
+        }}
+        aria-pressed={comparing}
+        aria-label={comparing ? "Remove from compare" : "Add to compare"}
+        className={cn(
+          "grid h-9 w-9 place-items-center rounded-lg border transition focus-ring",
+          comparing
+            ? "border-brand-300 bg-brand-50 text-brand-700"
+            : "border-line text-ink-soft hover:border-brand-200 hover:text-brand-600",
+        )}
+      >
+        <Compare size={17} />
+      </button>
+      <button
+        type="button"
         disabled={out}
         onClick={() => {
+          addItem(product, 1);
           setAdded(true);
           window.setTimeout(() => setAdded(false), 1400);
         }}

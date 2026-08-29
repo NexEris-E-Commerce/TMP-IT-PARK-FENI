@@ -1,12 +1,12 @@
-import { PlaceholderPage } from "@/components/layout/PlaceholderPage";
+import { getBuildOptions } from "@/lib/pc-builder";
+import { getAllProducts } from "@/lib/products-repo";
+import { PcBuilderClient } from "@/components/pc-builder/PcBuilderClient";
 
 export const metadata = { title: "PC Builder" };
 
-export default function Page() {
-  return (
-    <PlaceholderPage
-      title="Custom PC Builder"
-      description="Our step-by-step PC Builder — pick a CPU, motherboard, GPU, RAM and more with live compatibility checks and a running total — is launching soon."
-    />
-  );
+export default async function PcBuilderPage() {
+  const allProducts = await getAllProducts();
+  const options = getBuildOptions(allProducts);
+
+  return <PcBuilderClient options={options} />;
 }
