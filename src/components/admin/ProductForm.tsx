@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { categories } from "@/lib/data/categories";
 import { specsToText } from "@/lib/product-form-helpers";
+import { ImageUploadField } from "./ImageUploadField";
 import type { Product } from "@/lib/types";
 import type { ProductFormState } from "@/lib/actions/products";
 
@@ -41,9 +42,12 @@ export function ProductForm({
             ))}
           </select>
         </Field>
-        <Field label="Image URL">
-          <input name="image" defaultValue={initial?.image} className={inputClass} placeholder="https://…" />
-        </Field>
+        <div className="sm:col-span-2">
+          <span className="text-xs font-semibold text-ink-soft">Product Image</span>
+          <div className="mt-1.5">
+            <ImageUploadField defaultValue={initial?.image} />
+          </div>
+        </div>
         <Field label="Key Spec (short highlight)">
           <input name="keySpec" defaultValue={initial?.keySpec} className={inputClass} placeholder="e.g. Ryzen 7 · 16GB · RTX 4060" />
         </Field>

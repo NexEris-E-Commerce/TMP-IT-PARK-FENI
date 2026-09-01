@@ -3,13 +3,15 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/cn";
-import { Grid, Cart as CartIcon, Components, Headset, ArrowRight } from "@/components/ui/icons";
+import { Grid, Cart as CartIcon, Components, Headset, User, CreditCard, ArrowRight } from "@/components/ui/icons";
 
 const links = [
   { href: "/admin", label: "Dashboard", icon: Grid, exact: true },
   { href: "/admin/products", label: "Products", icon: Components },
   { href: "/admin/orders", label: "Orders", icon: CartIcon },
+  { href: "/admin/customers", label: "Customers", icon: User },
   { href: "/admin/messages", label: "Messages", icon: Headset },
+  { href: "/admin/settings", label: "Settings", icon: CreditCard },
 ];
 
 export function AdminSidebar() {

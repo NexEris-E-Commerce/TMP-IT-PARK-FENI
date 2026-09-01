@@ -224,6 +224,61 @@ create policy "contact_messages: public insert" on public.contact_messages
   for insert with check (true);
 
 -- ============================================================================
+-- Storage: product images
+-- ============================================================================
+-- A public bucket so product photos display on the storefront without
+-- authentication, but only admins can upload/replace/delete files.
+insert into storage.buckets (id, name, public)
+values ('product-images', 'product-images', true)
+on conflict (id) do nothing;
+
+create policy "product-images: public read" on storage.objects
+  for select using (bucket_id = 'product-images');
+
+create policy "product-images: admin upload" on storage.objects
+  for insert with check (
+    bucket_id = 'product-images'
+    and exists (select 1 from public.profiles where id = auth.uid() and is_admin = true)
+  );
+
+create policy "product-images: admin update" on storage.objects
+  for update using (
+    bucket_id = 'product-images'
+    and exists (select 1 from public.profiles where id = auth.uid() and is_admin = true)
+  );
+
+create policy "product-images: admin delete" on storage.objects
+  for delete using (
+    bucket_id = 'product-images'
+    and exists (select 1 from public.profiles where id = auth.uid() and is_admin = true)
+  );
+
+-- ============================================================================
+-- Payment settings (SSLCommerz credentials, managed from /admin)
+-- ============================================================================
+-- A single row holding the store's SSLCommerz merchant credentials, so an
+-- admin can configure/switch sandbox <-> live payments from the admin panel
+-- instead of editing environment variables and redeploying.
+--
+-- Deliberately has NO RLS policies at all (RLS is enabled with zero grants),
+-- so neither the anon key nor a logged-in user's key can read or write this
+-- table under any circumstance — only the service_role key
+-- (src/lib/supabase/admin.ts) can touch it. This keeps the store password
+-- from ever being reachable from the browser.
+create table if not exists public.payment_settings (
+  id text primary key default 'sslcommerz',
+  store_id text,
+  store_password text,
+  sandbox boolean not null default true,
+  updated_at timestamptz not null default now()
+);
+
+alter table public.payment_settings enable row level security;
+
+insert into public.payment_settings (id) values ('sslcommerz')
+on conflict (id) do nothing;
+
+-- ============================================================================
 -- Making someone an admin
 -- ============================================================================
 -- There's no self-serve admin signup on purpose. After a person registers a

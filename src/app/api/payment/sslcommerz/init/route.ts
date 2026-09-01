@@ -1,18 +1,15 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getSslcommerzConfig } from "@/lib/payment-settings";
 
 /**
  * Initiates an SSLCommerz payment session for an order and redirects the
  * shopper to the gateway's hosted checkout page.
  *
- * SETUP: once you have a merchant account, set these two env vars
- * (Vercel/hosting dashboard, or .env.local for development):
- *   SSLCOMMERZ_STORE_ID
- *   SSLCOMMERZ_STORE_PASSWORD
- * Use https://sandbox.sslcommerz.com for STORE_ID/PASSWORD while testing —
- * SSLCommerz gives you sandbox credentials immediately on signup, no need
- * to wait for the live merchant account to build/test this flow.
- * Toggle SSLCOMMERZ_SANDBOX=false when you go live.
+ * SETUP: configure Store ID / Store Password / sandbox-or-live from
+ * /admin/settings — no code change or redeploy needed. (Env vars
+ * SSLCOMMERZ_STORE_ID / SSLCOMMERZ_STORE_PASSWORD / SSLCOMMERZ_SANDBOX
+ * still work as a fallback if the admin settings row is empty.)
  */
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
@@ -22,17 +19,18 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}/checkout?error=missing_order`);
   }
 
-  const storeId = process.env.SSLCOMMERZ_STORE_ID;
-  const storePassword = process.env.SSLCOMMERZ_STORE_PASSWORD;
+  const config = await getSslcommerzConfig();
 
   // Not configured yet — send the shopper back with a clear message instead
-  // of a broken payment page. Once merchant credentials are added, this
-  // branch stops firing and the real gateway call below runs.
-  if (!storeId || !storePassword) {
+  // of a broken payment page. Once merchant credentials are added in
+  // /admin/settings, this branch stops firing and the real gateway call
+  // below runs.
+  if (!config) {
     return NextResponse.redirect(
       `${origin}/checkout?error=payment_not_configured&order=${orderId}`,
     );
   }
+  const { storeId, storePassword, sandbox: isSandbox } = config;
 
   const supabase = createAdminClient();
   const { data: order, error } = await supabase
@@ -45,7 +43,6 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}/checkout?error=order_not_found`);
   }
 
-  const isSandbox = process.env.SSLCOMMERZ_SANDBOX !== "false";
   const apiUrl = isSandbox
     ? "https://sandbox.sslcommerz.com/gwprocess/v4/api.php"
     : "https://securepay.sslcommerz.com/gwprocess/v4/api.php";
@@ -66,6 +63,12 @@ export async function GET(request: Request) {
     cus_city: order.city || "Feni",
     cus_country: "Bangladesh",
     shipping_method: "Courier",
+    ship_name: order.full_name,
+    ship_add1: order.address_line,
+    ship_city: order.city || "Feni",
+    ship_postcode: "3900",
+    ship_country: "Bangladesh",
+    num_of_item: String((order.order_items ?? []).length || 1),
     product_name: (order.order_items ?? []).map((i: { product_name: string }) => i.product_name).join(", ") || "IT PARK FENI order",
     product_category: "Electronics",
     product_profile: "physical-goods",

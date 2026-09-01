@@ -7,15 +7,23 @@ export const metadata = { title: "Dashboard" };
 export default async function AdminDashboardPage() {
   const supabase = createAdminClient();
 
-  const [{ count: orderCount }, { count: pendingCount }, { data: revenueRows }, { count: productCount }, { count: lowStockCount }, { count: messageCount }] =
-    await Promise.all([
-      supabase.from("orders").select("*", { count: "exact", head: true }),
-      supabase.from("orders").select("*", { count: "exact", head: true }).eq("status", "pending"),
-      supabase.from("orders").select("total").eq("payment_status", "paid"),
-      supabase.from("products").select("*", { count: "exact", head: true }),
-      supabase.from("products").select("*", { count: "exact", head: true }).lte("stock", 3),
-      supabase.from("contact_messages").select("*", { count: "exact", head: true }),
-    ]);
+  const [
+    { count: orderCount },
+    { count: pendingCount },
+    { data: revenueRows },
+    { count: productCount },
+    { count: lowStockCount },
+    { count: messageCount },
+    { data: userList },
+  ] = await Promise.all([
+    supabase.from("orders").select("*", { count: "exact", head: true }),
+    supabase.from("orders").select("*", { count: "exact", head: true }).eq("status", "pending"),
+    supabase.from("orders").select("total").eq("payment_status", "paid"),
+    supabase.from("products").select("*", { count: "exact", head: true }),
+    supabase.from("products").select("*", { count: "exact", head: true }).lte("stock", 3),
+    supabase.from("contact_messages").select("*", { count: "exact", head: true }),
+    supabase.auth.admin.listUsers({ perPage: 1 }),
+  ]);
 
   const revenue = (revenueRows ?? []).reduce((sum, r) => sum + (r.total ?? 0), 0);
 
@@ -25,6 +33,7 @@ export default async function AdminDashboardPage() {
     { label: "Paid Revenue", value: formatBDT(revenue), href: "/admin/orders" },
     { label: "Products", value: productCount ?? 0, href: "/admin/products" },
     { label: "Low Stock", value: lowStockCount ?? 0, href: "/admin/products?filter=low-stock" },
+    { label: "Customers", value: userList && "total" in userList ? userList.total : 0, href: "/admin/customers" },
     { label: "New Messages", value: messageCount ?? 0, href: "/admin/messages" },
   ];
 

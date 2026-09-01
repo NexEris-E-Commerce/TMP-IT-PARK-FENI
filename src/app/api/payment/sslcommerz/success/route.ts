@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getSslcommerzConfig } from "@/lib/payment-settings";
 
 /**
  * SSLCommerz redirects the shopper's browser here (POST) after payment.
@@ -17,17 +18,19 @@ export async function POST(request: Request) {
     return NextResponse.redirect(`${origin}/checkout?error=invalid_payment_response`);
   }
 
-  const storeId = process.env.SSLCOMMERZ_STORE_ID;
-  const storePassword = process.env.SSLCOMMERZ_STORE_PASSWORD;
-  const isSandbox = process.env.SSLCOMMERZ_SANDBOX !== "false";
+  const config = await getSslcommerzConfig();
+  if (!config) {
+    return NextResponse.redirect(`${origin}/checkout?error=payment_not_configured`);
+  }
+  const { storeId, storePassword, sandbox: isSandbox } = config;
   const validationUrl = isSandbox
     ? "https://sandbox.sslcommerz.com/validator/api/validationserverAPI.php"
     : "https://securepay.sslcommerz.com/validator/api/validationserverAPI.php";
 
   const params = new URLSearchParams({
     val_id: valId,
-    store_id: storeId ?? "",
-    store_passwd: storePassword ?? "",
+    store_id: storeId,
+    store_passwd: storePassword,
     format: "json",
   });
 

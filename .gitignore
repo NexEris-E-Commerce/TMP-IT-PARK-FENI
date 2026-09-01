@@ -39,4 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-.claude/ 
+
+# Claude Code / agent tool local config (may contain local secrets)
+.claude/
