@@ -61,6 +61,7 @@ export async function GET(request: Request) {
     cus_phone: order.phone,
     cus_add1: order.address_line,
     cus_city: order.city || "Feni",
+    cus_postcode: "3900",
     cus_country: "Bangladesh",
     shipping_method: "Courier",
     ship_name: order.full_name,
