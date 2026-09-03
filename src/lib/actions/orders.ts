@@ -12,7 +12,29 @@ export async function updateOrderStatus(orderId: string, status: string) {
   if (!VALID_STATUSES.includes(status)) return;
 
   const supabase = createAdminClient();
+
+  const { data: currentOrder } = await supabase.from("orders").select("status").eq("id", orderId).single();
+
   await supabase.from("orders").update({ status }).eq("id", orderId);
+
+  // Cancelling an order releases the stock it reserved at checkout, back
+  // into inventory. Guarded so re-saving an already-cancelled order (or any
+  // other status change) never double-restocks.
+  if (status === "cancelled" && currentOrder?.status !== "cancelled") {
+    const { data: items } = await supabase
+      .from("order_items")
+      .select("product_id, quantity")
+      .eq("order_id", orderId);
+
+    const restockItems = (items ?? [])
+      .filter((i) => i.product_id)
+      .map((i) => ({ product_id: i.product_id, quantity: i.quantity }));
+
+    if (restockItems.length) {
+      await supabase.rpc("restore_stock_for_order", { items: restockItems });
+    }
+  }
+
   revalidatePath("/admin/orders");
   revalidatePath(`/admin/orders/${orderId}`);
 }

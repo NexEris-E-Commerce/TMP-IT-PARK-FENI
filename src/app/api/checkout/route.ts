@@ -54,6 +54,17 @@ export async function POST(request: Request) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  // ---- Reserve stock (atomic — see reserve_stock_for_order in schema.sql) ----
+  // Must happen before the order is created: this is the only place that
+  // actually checks/decrements stock server-side, so it's what stops two
+  // customers both getting the last unit of something, or someone placing
+  // an order for a sold-out item via a direct API call.
+  const stockItems = body.lines.map((l) => ({ product_id: l.productId, quantity: l.quantity }));
+  const { error: stockError } = await supabase.rpc("reserve_stock_for_order", { items: stockItems });
+  if (stockError) {
+    return NextResponse.json({ error: stockError.message }, { status: 409 });
+  }
+
   // ---- Create order ----
   const { data: order, error: orderError } = await supabase
     .from("orders")
@@ -79,6 +90,9 @@ export async function POST(request: Request) {
 
   if (orderError || !order) {
     console.error("Order insert failed:", orderError);
+    // Give back the stock we just reserved — the order was never created,
+    // so it should never count against inventory.
+    await supabase.rpc("restore_stock_for_order", { items: stockItems });
     return NextResponse.json({ error: "Could not create order. Please try again." }, { status: 500 });
   }
 
