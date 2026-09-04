@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
+import { ProductImage } from "@/components/ui/ProductImage";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 import { ChevronRight, Compare as CompareIcon, Close } from "@/components/ui/icons";
@@ -79,11 +79,13 @@ export default function ComparePage() {
                         <Close size={12} />
                       </button>
                       <Link href={`/product/${item.slug}`} className="block">
-                        <div className="relative mx-auto aspect-square w-24 overflow-hidden rounded-xl bg-muted">
-                          {item.image ? (
-                            <Image src={item.image} alt={item.name} fill className="object-cover" />
-                          ) : null}
-                        </div>
+                        <ProductImage
+                          image={item.image}
+                          name={item.name}
+                          className="mx-auto aspect-square w-24 rounded-xl"
+                          iconSize={26}
+                          sizes="96px"
+                        />
                         <p className="mt-2 line-clamp-2 text-xs font-semibold text-ink">{item.name}</p>
                       </Link>
                       <p className="mt-1 text-sm font-bold text-ink">{formatBDT(item.price)}</p>

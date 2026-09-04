@@ -71,6 +71,7 @@ export default async function ProductPage({ params }: PageProps<"/product/[slug]
         <ProductGallery
           category={product.category}
           name={product.name}
+          image={product.image}
           discount={off}
           bestSeller={product.isBestSeller}
         />

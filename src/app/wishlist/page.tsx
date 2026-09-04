@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
+import { ProductImage } from "@/components/ui/ProductImage";
 import { ChevronRight, Heart, Cart as CartIcon, Close } from "@/components/ui/icons";
 import { useWishlist } from "@/lib/wishlist-context";
 import { useCart } from "@/lib/cart-context";
@@ -54,15 +54,13 @@ export default function WishlistPage() {
               </button>
 
               <Link href={`/product/${item.slug}`} className="block">
-                <div className="relative aspect-square overflow-hidden rounded-xl bg-muted">
-                  {item.image ? (
-                    <Image src={item.image} alt={item.name} fill className="object-cover" />
-                  ) : (
-                    <div className="grid h-full w-full place-items-center text-xs text-ink-dim">
-                      No image
-                    </div>
-                  )}
-                </div>
+                <ProductImage
+                  image={item.image}
+                  name={item.name}
+                  className="aspect-square rounded-xl"
+                  iconSize={40}
+                  sizes="(min-width: 1024px) 33vw, 50vw"
+                />
                 <h3 className="mt-3 line-clamp-2 text-sm font-semibold text-ink">{item.name}</h3>
               </Link>
 

@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
+import { ProductImage } from "@/components/ui/ProductImage";
 import { ChevronRight, Check } from "@/components/ui/icons";
 import { BUILD_SLOTS, checkCpuMotherboardCompat, type BuildSlotKey } from "@/lib/pc-builder";
 import { useCart } from "@/lib/cart-context";
@@ -96,9 +96,14 @@ export function PcBuilderClient({ options }: { options: Record<BuildSlotKey, Pro
                               : "border-line hover:border-brand-200",
                           )}
                         >
-                          <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-muted">
-                            {p.image && <Image src={p.image} alt={p.name} fill className="object-cover" />}
-                          </div>
+                          <ProductImage
+                            image={p.image}
+                            category={p.category}
+                            name={p.name}
+                            className="h-12 w-12 shrink-0 rounded-lg"
+                            iconSize={20}
+                            sizes="48px"
+                          />
                           <div className="min-w-0 flex-1">
                             <p className="line-clamp-1 text-xs font-semibold text-ink">{p.name}</p>
                             <p className="mt-0.5 text-xs text-ink-dim">{formatBDT(p.price)}</p>

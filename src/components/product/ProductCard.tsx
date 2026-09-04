@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Product } from "@/lib/types";
 import { discountPercent, stockState } from "@/lib/types";
 import { brandName } from "@/lib/data/brands";
-import { ProductThumb } from "../ui/ProductThumb";
+import { ProductImage } from "../ui/ProductImage";
 import { Badge } from "../ui/Badge";
 import { Price } from "../ui/Price";
 import { Rating } from "../ui/Rating";
@@ -30,7 +30,8 @@ export function ProductCard({
     >
       <div className="relative overflow-hidden">
         <Link href={href} aria-label={product.name} tabIndex={-1}>
-          <ProductThumb
+          <ProductImage
+            image={product.image}
             category={product.category}
             name={product.name}
             className="aspect-[4/3] w-full transition-transform duration-500 group-hover:scale-105"
@@ -81,9 +82,9 @@ export function ProductCard({
           </div>
         )}
 
-        <div className="mt-auto flex items-end justify-between gap-2 pt-3">
+        <div className="mt-auto flex flex-wrap items-end justify-between gap-x-2 gap-y-2 pt-3">
           <Price price={product.price} regularPrice={product.regularPrice} />
-          <ProductCardActions product={product} />
+          <ProductCardActions product={product} className="ml-auto" />
         </div>
       </div>
     </article>

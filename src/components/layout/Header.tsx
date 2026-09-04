@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { site, mainNav } from "@/lib/site";
 import { categories } from "@/lib/data/categories";
 import { formatPhone } from "@/lib/format";
@@ -40,6 +40,8 @@ export function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [drawer, setDrawer] = useState(false);
   const [shopOpen, setShopOpen] = useState(false);
+  const [desktopShopOpen, setDesktopShopOpen] = useState(false);
+  const desktopShopRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -52,6 +54,40 @@ export function Header() {
   useEffect(() => {
     setDrawer(false);
   }, [pathname]);
+
+  // Close the desktop Shop mega-dropdown on navigation. Category links all
+  // point at "/shop?..." though, so pathname alone often doesn't change
+  // (only the query string does) — this is a backup for when it does, not
+  // the primary close mechanism (see the click-outside/Escape listener and
+  // each link's onClick below for that).
+  useEffect(() => {
+    setDesktopShopOpen(false);
+  }, [pathname]);
+
+  // Desktop Shop dropdown: visibility is driven entirely by `desktopShopOpen`
+  // state (not CSS :hover/:focus-within — those don't reliably clear after a
+  // client-side navigation, which is exactly what caused it to stay stuck
+  // open). Anything that should close it — clicking anywhere outside,
+  // pressing Escape — is handled here in one place.
+  useEffect(() => {
+    if (!desktopShopOpen) return;
+
+    function handlePointerDown(e: MouseEvent) {
+      if (desktopShopRef.current && !desktopShopRef.current.contains(e.target as Node)) {
+        setDesktopShopOpen(false);
+      }
+    }
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") setDesktopShopOpen(false);
+    }
+
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [desktopShopOpen]);
 
   useEffect(() => {
     document.body.style.overflow = drawer ? "hidden" : "";
@@ -146,9 +182,17 @@ export function Header() {
               {mainNav.map((item) => {
                 if (item.href === "/shop") {
                   return (
-                    <div key={item.href} className="group relative">
+                    <div
+                      key={item.href}
+                      ref={desktopShopRef}
+                      className="relative"
+                      onMouseEnter={() => setDesktopShopOpen(true)}
+                      onMouseLeave={() => setDesktopShopOpen(false)}
+                      onFocus={() => setDesktopShopOpen(true)}
+                    >
                       <Link
                         href="/shop"
+                        onClick={() => setDesktopShopOpen(false)}
                         className={cn(
                           "inline-flex h-12 items-center gap-1 px-3 text-sm font-semibold transition",
                           isActive(item.href)
@@ -159,17 +203,23 @@ export function Header() {
                         {item.label}
                         <ChevronDown
                           size={15}
-                          className="transition group-hover:rotate-180"
+                          className={cn("transition", desktopShopOpen && "rotate-180")}
                         />
                       </Link>
                       {/* Mega dropdown */}
-                      <div className="invisible absolute left-0 top-full z-40 w-[560px] translate-y-1 opacity-0 transition-all duration-200 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:opacity-100">
+                      <div
+                        className={cn(
+                          "invisible absolute left-0 top-full z-40 w-[560px] translate-y-1 opacity-0 transition-all duration-200",
+                          desktopShopOpen && "visible translate-y-0 opacity-100",
+                        )}
+                      >
                         <div className="mt-1 rounded-2xl border border-line bg-surface p-3 shadow-lift">
                           <div className="grid grid-cols-2 gap-1">
                             {categories.map((cat) => (
                               <Link
                                 key={cat.slug}
                                 href={`/shop?category=${cat.slug}`}
+                                onClick={() => setDesktopShopOpen(false)}
                                 className="flex items-center gap-3 rounded-xl p-2.5 transition hover:bg-brand-50"
                               >
                                 <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-muted text-brand-600">
@@ -188,6 +238,7 @@ export function Header() {
                           </div>
                           <Link
                             href="/shop"
+                            onClick={() => setDesktopShopOpen(false)}
                             className="mt-2 flex items-center justify-center gap-1 rounded-xl bg-muted py-2.5 text-sm font-semibold text-brand-700 transition hover:bg-brand-50"
                           >
                             View all products <ChevronRight size={15} />

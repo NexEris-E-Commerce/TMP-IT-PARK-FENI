@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
+import { ProductImage } from "@/components/ui/ProductImage";
 import { ChevronRight, Plus, Minus, Close, Cart as CartIcon } from "@/components/ui/icons";
 import { useCart } from "@/lib/cart-context";
 import { formatBDT } from "@/lib/format";
@@ -47,17 +47,14 @@ export default function CartPage() {
             <ul className="divide-y divide-line rounded-2xl border border-line bg-surface">
               {lines.map((line) => (
                 <li key={line.productId} className="flex gap-4 p-4 sm:p-5">
-                  <Link
-                    href={`/product/${line.slug}`}
-                    className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-muted sm:h-24 sm:w-24"
-                  >
-                    {line.image ? (
-                      <Image src={line.image} alt={line.name} fill className="object-cover" />
-                    ) : (
-                      <div className="grid h-full w-full place-items-center text-xs text-ink-dim">
-                        No image
-                      </div>
-                    )}
+                  <Link href={`/product/${line.slug}`} className="shrink-0">
+                    <ProductImage
+                      image={line.image}
+                      name={line.name}
+                      className="h-20 w-20 rounded-xl sm:h-24 sm:w-24"
+                      iconSize={28}
+                      sizes="96px"
+                    />
                   </Link>
 
                   <div className="flex flex-1 flex-col justify-between gap-2">
