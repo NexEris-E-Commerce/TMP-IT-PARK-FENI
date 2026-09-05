@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { deliveryFee, getZone } from "@/lib/commerce";
+import { checkRateLimit, checkoutLimiter, getClientIp } from "@/lib/rate-limit";
 
 interface CheckoutLine {
   productId: string;
@@ -23,6 +24,15 @@ interface CheckoutPayload {
 }
 
 export async function POST(request: Request) {
+  const ip = getClientIp(request);
+  const rateCheck = await checkRateLimit(checkoutLimiter, `checkout:${ip}`);
+  if (!rateCheck.allowed) {
+    return NextResponse.json(
+      { error: "Too many checkout attempts. Please wait a bit and try again." },
+      { status: 429, headers: { "Retry-After": String(rateCheck.retryAfterSeconds) } },
+    );
+  }
+
   let body: CheckoutPayload;
   try {
     body = await request.json();

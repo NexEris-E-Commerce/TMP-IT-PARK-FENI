@@ -1,7 +1,17 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { checkRateLimit, contactLimiter, getClientIp } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
+  const ip = getClientIp(request);
+  const rateCheck = await checkRateLimit(contactLimiter, `contact:${ip}`);
+  if (!rateCheck.allowed) {
+    return NextResponse.json(
+      { error: "Too many messages sent. Please wait a bit and try again." },
+      { status: 429, headers: { "Retry-After": String(rateCheck.retryAfterSeconds) } },
+    );
+  }
+
   let body: { name?: string; email?: string; phone?: string; subject?: string; message?: string };
   try {
     body = await request.json();

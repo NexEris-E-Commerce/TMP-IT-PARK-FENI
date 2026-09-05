@@ -51,6 +51,12 @@ export const Close = (p: IconProps) => (<Svg {...p}><path d="M6 6l12 12M18 6 6 1
 export const Plus = (p: IconProps) => (<Svg {...p}><path d="M12 5v14M5 12h14" /></Svg>);
 export const Minus = (p: IconProps) => (<Svg {...p}><path d="M5 12h14" /></Svg>);
 export const Check = (p: IconProps) => (<Svg {...p}><path d="m20 6-11 11-5-5" /></Svg>);
+export const AlertTriangle = (p: IconProps) => (
+  <Svg {...p}><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" /><path d="M12 9v4" /><path d="M12 17h.01" /></Svg>
+);
+export const RefreshCw = (p: IconProps) => (
+  <Svg {...p}><path d="M21 12a9 9 0 0 1-15.4 6.4M3 12a9 9 0 0 1 15.4-6.4" /><path d="M21 4v5h-5M3 20v-5h5" /></Svg>
+);
 export const Grid = (p: IconProps) => (
   <Svg {...p}><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></Svg>
 );
