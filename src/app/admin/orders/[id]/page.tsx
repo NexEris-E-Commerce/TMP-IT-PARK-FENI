@@ -2,7 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { formatBDT } from "@/lib/format";
-import { ChevronRight } from "@/components/ui/icons";
+import { ChevronRight, Download } from "@/components/ui/icons";
+import { Button } from "@/components/ui/Button";
 import { OrderStatusSelect } from "@/components/admin/OrderStatusSelect";
 import { PaymentStatusSelect } from "@/components/admin/PaymentStatusSelect";
 
@@ -29,7 +30,11 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
         <h1 className="font-display text-2xl font-extrabold tracking-tight text-ink">
           Order #{order.order_number}
         </h1>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <Button href={`/api/orders/${order.id}/invoice`} variant="outline" size="sm">
+            <Download size={15} />
+            Download Invoice
+          </Button>
           <OrderStatusSelect orderId={order.id} status={order.status} />
           <PaymentStatusSelect orderId={order.id} status={order.payment_status} />
         </div>

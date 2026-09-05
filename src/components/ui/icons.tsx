@@ -57,6 +57,9 @@ export const AlertTriangle = (p: IconProps) => (
 export const RefreshCw = (p: IconProps) => (
   <Svg {...p}><path d="M21 12a9 9 0 0 1-15.4 6.4M3 12a9 9 0 0 1 15.4-6.4" /><path d="M21 4v5h-5M3 20v-5h5" /></Svg>
 );
+export const Download = (p: IconProps) => (
+  <Svg {...p}><path d="M12 3v12" /><path d="m7 10 5 5 5-5" /><path d="M5 21h14" /></Svg>
+);
 export const Grid = (p: IconProps) => (
   <Svg {...p}><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></Svg>
 );

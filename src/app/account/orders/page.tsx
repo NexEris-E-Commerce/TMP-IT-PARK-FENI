@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
-import { ChevronRight } from "@/components/ui/icons";
+import { ChevronRight, Download } from "@/components/ui/icons";
 import { createClient } from "@/lib/supabase/server";
 import { formatBDT } from "@/lib/format";
 import { cn } from "@/lib/cn";
@@ -102,6 +102,16 @@ export default async function OrdersPage() {
                   {order.payment_status}
                 </span>
                 <span className="text-base font-bold text-ink">{formatBDT(order.total)}</span>
+              </div>
+
+              <div className="mt-4 border-t border-line pt-4">
+                <Link
+                  href={`/api/orders/${order.id}/invoice`}
+                  className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-700 transition hover:text-brand-800"
+                >
+                  <Download size={15} />
+                  Download Invoice
+                </Link>
               </div>
             </li>
           ))}
