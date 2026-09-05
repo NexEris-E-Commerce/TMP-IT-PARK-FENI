@@ -10,11 +10,12 @@
     "seed": "tsx scripts/seed-products.ts"
   },
   "dependencies": {
+    "@sentry/nextjs": "^10.73.0",
+    "@supabase/ssr": "^0.5.1",
+    "@supabase/supabase-js": "^2.45.4",
     "next": "16.3.3",
     "react": "19.2.8",
     "react-dom": "19.2.8",
-    "@supabase/supabase-js": "^2.45.4",
-    "@supabase/ssr": "^0.5.1",
     "server-only": "^0.0.1"
   },
   "devDependencies": {
@@ -25,7 +26,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.3.3",
     "tailwindcss": "^4",
-    "typescript": "^5",
-    "tsx": "^4.19.2"
+    "tsx": "^4.19.2",
+    "typescript": "^5"
   }
 }
