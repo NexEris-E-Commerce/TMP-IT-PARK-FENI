@@ -1,5 +1,11 @@
 import type { NextConfig } from "next";
-import { withSentryConfig } from "@sentry/nextjs/config";
+// Imported from the main "@sentry/nextjs" entry (not the newer
+// "@sentry/nextjs/config" subpath) — that subpath export has caused
+// "Cannot find module" errors depending on the installed package manager /
+// platform combination. This import path is the long-supported, more
+// broadly compatible one; it just prints one harmless deprecation notice
+// in the build log.
+import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig: NextConfig = {
   images: {
