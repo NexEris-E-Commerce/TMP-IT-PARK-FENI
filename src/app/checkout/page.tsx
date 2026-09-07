@@ -1,14 +1,16 @@
 "use client";
 
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
-import { ChevronRight } from "@/components/ui/icons";
+import { ChevronRight, MapPin, Check } from "@/components/ui/icons";
 import { useCart } from "@/lib/cart-context";
 import { formatBDT } from "@/lib/format";
 import { DELIVERY_ZONES, deliveryFee, getZone } from "@/lib/commerce";
+import { createClient } from "@/lib/supabase/client";
+import type { SavedAddress } from "@/components/account/AddressBook";
 import { cn } from "@/lib/cn";
 
 const ERROR_MESSAGES: Record<string, string> = {
@@ -46,6 +48,51 @@ function CheckoutForm() {
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+
+  const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([]);
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+
+  // Logged-in customers: load their saved addresses and pre-fill the form
+  // with their default one, so returning customers don't have to retype
+  // everything. Guests (no session) simply see none of this — the form
+  // behaves exactly as before.
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadAddresses() {
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user || cancelled) return;
+
+      const { data } = await supabase
+        .from("addresses")
+        .select("id, label, full_name, phone, zone_id, address_line, city, is_default")
+        .eq("user_id", user.id)
+        .order("is_default", { ascending: false })
+        .order("created_at", { ascending: false });
+
+      if (cancelled || !data || data.length === 0) return;
+
+      setSavedAddresses(data as SavedAddress[]);
+      applyAddress(data[0] as SavedAddress);
+    }
+
+    loadAddresses();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  function applyAddress(address: SavedAddress) {
+    setSelectedAddressId(address.id);
+    setFullName(address.full_name);
+    setPhone(address.phone);
+    setZoneId(address.zone_id);
+    setAddressLine(address.address_line);
+    setCity(address.city ?? "");
+  }
 
   const zone = getZone(zoneId);
   const fee = useMemo(() => deliveryFee(zone, subtotal), [zone, subtotal]);
@@ -141,6 +188,40 @@ function CheckoutForm() {
 
       <form onSubmit={handleSubmit} className="mt-6 grid gap-8 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
+          {savedAddresses.length > 0 && (
+            <section className="rounded-2xl border border-line bg-surface p-5 sm:p-6">
+              <h2 className="font-display text-lg font-bold text-ink">Saved Addresses</h2>
+              <p className="mt-1 text-xs text-ink-dim">Pick one to fill the form below, or just type a new address.</p>
+              <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
+                {savedAddresses.map((address) => (
+                  <button
+                    key={address.id}
+                    type="button"
+                    onClick={() => applyAddress(address)}
+                    className={cn(
+                      "flex items-start gap-2.5 rounded-xl border p-3.5 text-left transition",
+                      selectedAddressId === address.id
+                        ? "border-brand-500 bg-brand-50/60 ring-1 ring-brand-500"
+                        : "border-line hover:border-brand-200",
+                    )}
+                  >
+                    <MapPin size={16} className="mt-0.5 shrink-0 text-brand-600" />
+                    <span className="min-w-0">
+                      <span className="flex items-center gap-1.5 text-sm font-semibold text-ink">
+                        {address.label}
+                        {selectedAddressId === address.id && <Check size={13} className="text-brand-600" />}
+                      </span>
+                      <span className="block truncate text-xs text-ink-soft">
+                        {address.address_line}
+                        {address.city ? `, ${address.city}` : ""}
+                      </span>
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </section>
+          )}
+
           {/* Delivery details */}
           <section className="rounded-2xl border border-line bg-surface p-5 sm:p-6">
             <h2 className="font-display text-lg font-bold text-ink">Delivery Details</h2>
