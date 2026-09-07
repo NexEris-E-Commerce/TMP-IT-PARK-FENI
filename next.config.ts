@@ -19,6 +19,23 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+
+  // @sparticuz/chromium ships its Chromium binary alongside its JS and
+  // finds it via a path relative to its own package folder at runtime —
+  // that breaks if the package gets bundled into a single chunk file, so
+  // both it and puppeteer-core must stay as real, unbundled node_modules
+  // requires. (Next.js externalizes these by default under webpack, but
+  // this project builds with Turbopack, which needs it stated explicitly.)
+  serverExternalPackages: ["@sparticuz/chromium", "puppeteer-core"],
+
+  // Marking the package external isn't enough on its own — Vercel's file
+  // tracer decides what actually gets uploaded with the function, and it
+  // can't "see" the binary because chromium.executablePath() extracts it
+  // dynamically at runtime rather than via a statically analyzable
+  // require/import. This explicitly forces that folder along for the ride.
+  outputFileTracingIncludes: {
+    "/api/orders/[id]/invoice/route": ["./node_modules/@sparticuz/chromium/bin/**"],
+  },
 };
 
 // withSentryConfig is safe to leave on even before Sentry is fully set up —
