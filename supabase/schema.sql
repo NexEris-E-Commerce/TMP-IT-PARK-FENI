@@ -13,8 +13,12 @@ create table if not exists public.profiles (
   full_name text,
   phone text,
   is_admin boolean not null default false,
+  is_super_admin boolean not null default false,
   created_at timestamptz not null default now()
 );
+
+-- Safe to re-run on a database created before super admins existed.
+alter table public.profiles add column if not exists is_super_admin boolean not null default false;
 
 -- Auto-create a profile row whenever a new auth user signs up
 -- (covers email/password AND Google OAuth sign-ups).
@@ -81,17 +85,30 @@ create index if not exists products_category_idx on public.products (category);
 create index if not exists products_brand_idx on public.products (brand);
 
 -- ---------- Orders ----------
-create type public.order_status as enum (
-  'pending',        -- created, awaiting payment (or COD confirmation call)
-  'confirmed',       -- payment verified / COD confirmed by phone
-  'processing',
-  'shipped',
-  'delivered',
-  'cancelled'
-);
+-- CREATE TYPE has no IF NOT EXISTS in Postgres, so guard each one manually —
+-- this keeps the whole file safe to re-run against a database that was
+-- already set up (e.g. to pick up a newer column added below).
+do $$
+begin
+  if not exists (select 1 from pg_type where typname = 'order_status') then
+    create type public.order_status as enum (
+      'pending',        -- created, awaiting payment (or COD confirmation call)
+      'confirmed',       -- payment verified / COD confirmed by phone
+      'processing',
+      'shipped',
+      'delivered',
+      'cancelled'
+    );
+  end if;
 
-create type public.payment_method as enum ('cod', 'sslcommerz');
-create type public.payment_status as enum ('unpaid', 'paid', 'failed', 'refunded');
+  if not exists (select 1 from pg_type where typname = 'payment_method') then
+    create type public.payment_method as enum ('cod', 'sslcommerz');
+  end if;
+
+  if not exists (select 1 from pg_type where typname = 'payment_status') then
+    create type public.payment_status as enum ('unpaid', 'paid', 'failed', 'refunded');
+  end if;
+end $$;
 
 create table if not exists public.orders (
   id uuid primary key default gen_random_uuid(),
@@ -166,33 +183,41 @@ alter table public.orders enable row level security;
 alter table public.order_items enable row level security;
 
 -- Profiles: a user can read/update only their own row.
+drop policy if exists "profiles: read own" on public.profiles;
 create policy "profiles: read own" on public.profiles
   for select using (auth.uid() = id);
+drop policy if exists "profiles: update own" on public.profiles;
 create policy "profiles: update own" on public.profiles
   for update using (auth.uid() = id);
 
 -- Addresses: fully scoped to the owning user.
+drop policy if exists "addresses: owner full access" on public.addresses;
 create policy "addresses: owner full access" on public.addresses
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
 -- Products: public read. Writes go through the service-role key from the
 -- admin panel only (no client-side write policy defined on purpose).
+drop policy if exists "products: public read" on public.products;
 create policy "products: public read" on public.products
   for select using (true);
 
 -- Orders: owner can read their own orders; anyone can INSERT (guest
 -- checkout creates orders via the anon key through /api/checkout, which
 -- validates the payload server-side before insert).
+drop policy if exists "orders: owner read" on public.orders;
 create policy "orders: owner read" on public.orders
   for select using (auth.uid() = user_id);
+drop policy if exists "orders: authenticated insert own" on public.orders;
 create policy "orders: authenticated insert own" on public.orders
   for insert with check (auth.uid() = user_id or user_id is null);
 
 -- Order items follow the parent order's visibility.
+drop policy if exists "order_items: read via order" on public.order_items;
 create policy "order_items: read via order" on public.order_items
   for select using (
     exists (select 1 from public.orders o where o.id = order_id and o.user_id = auth.uid())
   );
+drop policy if exists "order_items: insert via order" on public.order_items;
 create policy "order_items: insert via order" on public.order_items
   for insert with check (
     exists (select 1 from public.orders o where o.id = order_id)
@@ -220,6 +245,7 @@ alter table public.contact_messages enable row level security;
 
 -- Anyone can submit a message (validated server-side in /api/contact);
 -- no one can read them back via the anon key — only the admin (service role).
+drop policy if exists "contact_messages: public insert" on public.contact_messages;
 create policy "contact_messages: public insert" on public.contact_messages
   for insert with check (true);
 
@@ -232,21 +258,25 @@ insert into storage.buckets (id, name, public)
 values ('product-images', 'product-images', true)
 on conflict (id) do nothing;
 
+drop policy if exists "product-images: public read" on storage.objects;
 create policy "product-images: public read" on storage.objects
   for select using (bucket_id = 'product-images');
 
+drop policy if exists "product-images: admin upload" on storage.objects;
 create policy "product-images: admin upload" on storage.objects
   for insert with check (
     bucket_id = 'product-images'
     and exists (select 1 from public.profiles where id = auth.uid() and is_admin = true)
   );
 
+drop policy if exists "product-images: admin update" on storage.objects;
 create policy "product-images: admin update" on storage.objects
   for update using (
     bucket_id = 'product-images'
     and exists (select 1 from public.profiles where id = auth.uid() and is_admin = true)
   );
 
+drop policy if exists "product-images: admin delete" on storage.objects;
 create policy "product-images: admin delete" on storage.objects
   for delete using (
     bucket_id = 'product-images'
@@ -276,6 +306,44 @@ create table if not exists public.payment_settings (
 alter table public.payment_settings enable row level security;
 
 insert into public.payment_settings (id) values ('sslcommerz')
+on conflict (id) do nothing;
+
+-- ============================================================================
+-- Search console settings (Google Search Console site verification)
+-- ============================================================================
+-- A single row holding Google Search Console verification data, managed
+-- from /admin/settings by a super admin. Supports the verification methods
+-- Google offers for a URL-prefix property that can be satisfied entirely
+-- from within the app:
+--   - HTML tag:  a <meta name="google-site-verification" content="..."> in
+--     <head> — meta_tag_content holds the content value, rendered by the
+--     root layout's generateMetadata.
+--   - HTML file: Google gives a googleXXXXXXXX.html file to host at the
+--     site root — html_file_name/html_file_content hold it, served by
+--     src/app/[googleVerificationFile]/route.ts.
+--   - Google Analytics / Google Tag Manager: these verify via a tracking
+--     snippet already present on every page — ga_measurement_id /
+--     gtm_container_id hold the IDs, rendered as <script> tags in the root
+--     layout. (Google still verifies these against the account that
+--     installed them, same as usual.)
+-- Domain-name-provider (DNS TXT record) verification isn't listed here on
+-- purpose: it's done at the domain registrar, not inside this app.
+--
+-- Deliberately has NO RLS policies at all (same reasoning as
+-- payment_settings above) — only the service_role key can touch it.
+create table if not exists public.search_console_settings (
+  id text primary key default 'google_search_console',
+  meta_tag_content text,
+  html_file_name text,
+  html_file_content text,
+  ga_measurement_id text,
+  gtm_container_id text,
+  updated_at timestamptz not null default now()
+);
+
+alter table public.search_console_settings enable row level security;
+
+insert into public.search_console_settings (id) values ('google_search_console')
 on conflict (id) do nothing;
 
 -- ============================================================================
@@ -362,7 +430,7 @@ grant execute on function public.reserve_stock_for_order(jsonb) to anon, authent
 grant execute on function public.restore_stock_for_order(jsonb) to anon, authenticated, service_role;
 
 -- ============================================================================
--- Making someone an admin
+-- Making someone an admin / super admin
 -- ============================================================================
 -- There's no self-serve admin signup on purpose. After a person registers a
 -- normal account, promote them by running (in the SQL Editor):
@@ -371,3 +439,15 @@ grant execute on function public.restore_stock_for_order(jsonb) to anon, authent
 --     (select id from auth.users where email = 'owner@example.com');
 --
 -- The /admin panel checks this flag server-side on every request.
+--
+-- Super admins are a stricter tier on top of that: they're the only ones who
+-- can grant/revoke admin (and super admin) access to other accounts, and are
+-- the only ones who can see/edit Settings (SSLCommerz store credentials).
+-- Bootstrap the first super admin the same way (this also implies is_admin,
+-- so a single statement is enough for the very first one):
+--
+--   update public.profiles set is_admin = true, is_super_admin = true where id =
+--     (select id from auth.users where email = 'owner@example.com');
+--
+-- After that, additional admins/super admins can be managed from
+-- /admin/customers by an existing super admin — no more SQL needed.

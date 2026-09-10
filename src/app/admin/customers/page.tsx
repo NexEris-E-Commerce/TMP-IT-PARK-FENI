@@ -1,16 +1,19 @@
 import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { formatBDT } from "@/lib/format";
+import { requireAdmin } from "@/lib/require-admin";
 import { AdminToggleSwitch } from "@/components/admin/AdminToggleSwitch";
+import { RoleBadge } from "@/components/admin/RoleBadge";
 
 export const metadata = { title: "Customers" };
 
 export default async function AdminCustomersPage() {
+  const currentUser = await requireAdmin();
   const supabase = createAdminClient();
 
   const [{ data: userList }, { data: profiles }, { data: orders }] = await Promise.all([
     supabase.auth.admin.listUsers({ perPage: 200 }),
-    supabase.from("profiles").select("id, full_name, phone, is_admin"),
+    supabase.from("profiles").select("id, full_name, phone, is_admin, is_super_admin"),
     supabase.from("orders").select("user_id, total"),
   ]);
 
@@ -33,6 +36,7 @@ export default async function AdminCustomersPage() {
         name: profile?.full_name || (u.user_metadata?.full_name as string) || "—",
         phone: profile?.phone || "—",
         isAdmin: profile?.is_admin ?? false,
+        isSuperAdmin: profile?.is_super_admin ?? false,
         joinedAt: u.created_at,
         orderCount: stats.count,
         totalSpent: stats.total,
@@ -56,13 +60,14 @@ export default async function AdminCustomersPage() {
               <th className="p-4">Orders</th>
               <th className="p-4">Total Spent</th>
               <th className="p-4">Admin</th>
+              <th className="p-4">Super Admin</th>
               <th className="p-4"></th>
             </tr>
           </thead>
           <tbody>
             {customers.length === 0 ? (
               <tr>
-                <td colSpan={6} className="p-8 text-center text-sm text-ink-dim">
+                <td colSpan={7} className="p-8 text-center text-sm text-ink-dim">
                   No registered customers yet.
                 </td>
               </tr>
@@ -80,7 +85,18 @@ export default async function AdminCustomersPage() {
                   <td className="p-4 font-medium text-ink">{c.orderCount}</td>
                   <td className="p-4 font-medium text-ink">{formatBDT(c.totalSpent)}</td>
                   <td className="p-4">
-                    <AdminToggleSwitch userId={c.id} isAdmin={c.isAdmin} />
+                    {currentUser.isSuperAdmin ? (
+                      <AdminToggleSwitch userId={c.id} role="is_admin" value={c.isAdmin} />
+                    ) : (
+                      <RoleBadge active={c.isAdmin} label="Admin" />
+                    )}
+                  </td>
+                  <td className="p-4">
+                    {currentUser.isSuperAdmin ? (
+                      <AdminToggleSwitch userId={c.id} role="is_super_admin" value={c.isSuperAdmin} />
+                    ) : (
+                      <RoleBadge active={c.isSuperAdmin} label="Super" />
+                    )}
                   </td>
                   <td className="p-4 text-right">
                     <Link

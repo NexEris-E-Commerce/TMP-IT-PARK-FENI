@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireAdmin } from "@/lib/require-admin";
+import { requireSuperAdmin } from "@/lib/require-admin";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export interface PaymentSettingsFormState {
@@ -10,7 +10,7 @@ export interface PaymentSettingsFormState {
 }
 
 export async function getPaymentSettings() {
-  await requireAdmin();
+  await requireSuperAdmin();
   const supabase = createAdminClient();
   const { data } = await supabase
     .from("payment_settings")
@@ -29,7 +29,7 @@ export async function updatePaymentSettings(
   _prev: PaymentSettingsFormState,
   formData: FormData,
 ): Promise<PaymentSettingsFormState> {
-  await requireAdmin();
+  await requireSuperAdmin();
 
   const storeId = String(formData.get("storeId") ?? "").trim();
   const storePassword = String(formData.get("storePassword") ?? "").trim();

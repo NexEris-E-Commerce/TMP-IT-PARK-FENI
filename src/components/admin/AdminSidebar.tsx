@@ -11,15 +11,18 @@ const links = [
   { href: "/admin/orders", label: "Orders", icon: CartIcon },
   { href: "/admin/customers", label: "Customers", icon: User },
   { href: "/admin/messages", label: "Messages", icon: Headset },
-  { href: "/admin/settings", label: "Settings", icon: CreditCard },
+  // Settings (SSLCommerz store credentials) is super-admin only — filtered
+  // out below for regular admins.
+  { href: "/admin/settings", label: "Settings", icon: CreditCard, superAdminOnly: true },
 ];
 
-export function AdminSidebar() {
+export function AdminSidebar({ isSuperAdmin }: { isSuperAdmin: boolean }) {
   const pathname = usePathname();
+  const visibleLinks = links.filter((l) => !l.superAdminOnly || isSuperAdmin);
 
   return (
     <nav className="space-y-1">
-      {links.map((l) => {
+      {visibleLinks.map((l) => {
         const active = l.exact ? pathname === l.href : pathname.startsWith(l.href);
         return (
           <Link

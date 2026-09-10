@@ -2,19 +2,22 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { formatBDT } from "@/lib/format";
+import { requireAdmin } from "@/lib/require-admin";
 import { ChevronRight } from "@/components/ui/icons";
 import { AdminToggleSwitch } from "@/components/admin/AdminToggleSwitch";
+import { RoleBadge } from "@/components/admin/RoleBadge";
 import { cn } from "@/lib/cn";
 
 export const metadata = { title: "Customer Detail" };
 
 export default async function AdminCustomerDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  const currentUser = await requireAdmin();
   const supabase = createAdminClient();
 
   const [{ data: userData, error: userError }, { data: profile }, { data: orders }] = await Promise.all([
     supabase.auth.admin.getUserById(id),
-    supabase.from("profiles").select("full_name, phone, is_admin").eq("id", id).single(),
+    supabase.from("profiles").select("full_name, phone, is_admin, is_super_admin").eq("id", id).single(),
     supabase.from("orders").select("*").eq("user_id", id).order("created_at", { ascending: false }),
   ]);
 
@@ -41,9 +44,23 @@ export default async function AdminCustomerDetailPage({ params }: { params: Prom
           <p className="mt-1 text-sm text-ink-soft">{user.email}</p>
           {profile?.phone && <p className="text-sm text-ink-soft">{profile.phone}</p>}
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-ink-soft">Admin access</span>
-          <AdminToggleSwitch userId={id} isAdmin={profile?.is_admin ?? false} />
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-ink-soft">Admin</span>
+            {currentUser.isSuperAdmin ? (
+              <AdminToggleSwitch userId={id} role="is_admin" value={profile?.is_admin ?? false} />
+            ) : (
+              <RoleBadge active={profile?.is_admin ?? false} label="Admin" />
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-ink-soft">Super Admin</span>
+            {currentUser.isSuperAdmin ? (
+              <AdminToggleSwitch userId={id} role="is_super_admin" value={profile?.is_super_admin ?? false} />
+            ) : (
+              <RoleBadge active={profile?.is_super_admin ?? false} label="Super" />
+            )}
+          </div>
         </div>
       </div>
 

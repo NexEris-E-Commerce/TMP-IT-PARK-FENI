@@ -1,11 +1,25 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { setUserAdmin } from "@/lib/actions/users";
+import { setUserRole } from "@/lib/actions/users";
 import { cn } from "@/lib/cn";
 
-export function AdminToggleSwitch({ userId, isAdmin }: { userId: string; isAdmin: boolean }) {
-  const [checked, setChecked] = useState(isAdmin);
+/**
+ * Toggle switch for granting/revoking admin or super admin access. Only
+ * rendered for super admins viewing the customers list — the server action
+ * this calls (setUserRole) re-checks that on every request too, so this is
+ * defense in depth, not the real guard.
+ */
+export function AdminToggleSwitch({
+  userId,
+  role,
+  value,
+}: {
+  userId: string;
+  role: "is_admin" | "is_super_admin";
+  value: boolean;
+}) {
+  const [checked, setChecked] = useState(value);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -13,7 +27,7 @@ export function AdminToggleSwitch({ userId, isAdmin }: { userId: string; isAdmin
     const next = !checked;
     setError(null);
     startTransition(async () => {
-      const result = await setUserAdmin(userId, next);
+      const result = await setUserRole(userId, role, next);
       if (result?.error) {
         setError(result.error);
         return;
