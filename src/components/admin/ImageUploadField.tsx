@@ -9,7 +9,14 @@ import { cn } from "@/lib/cn";
 const inputClass =
   "h-11 w-full rounded-xl border border-line-strong bg-surface px-3.5 text-sm text-ink outline-none transition focus:border-brand-500 focus:ring-1 focus:ring-brand-500";
 
-export function ImageUploadField({ defaultValue }: { defaultValue?: string }) {
+export function ImageUploadField({
+  defaultValue,
+  name = "image",
+}: {
+  defaultValue?: string;
+  /** Form field name for the hidden input this submits. Defaults to "image" (used by the product form). */
+  name?: string;
+}) {
   const [url, setUrl] = useState(defaultValue ?? "");
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -58,8 +65,8 @@ export function ImageUploadField({ defaultValue }: { defaultValue?: string }) {
 
   return (
     <div>
-      {/* This hidden input is what actually submits with the form as `image`. */}
-      <input type="hidden" name="image" value={url} />
+      {/* This hidden input is what actually submits with the form. */}
+      <input type="hidden" name={name} value={url} />
 
       {url ? (
         <div className="relative h-32 w-32 overflow-hidden rounded-xl border border-line bg-muted">

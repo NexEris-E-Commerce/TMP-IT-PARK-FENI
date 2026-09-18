@@ -73,6 +73,7 @@ create table if not exists public.products (
   key_spec text,
   specs jsonb default '[]'::jsonb,     -- [{label, value}, ...]
   warranty text,
+  tags text[] default '{}'::text[],   -- free-form tags, e.g. for homepage billboard targeting
   is_featured boolean default false,
   is_best_seller boolean default false,
   is_deal boolean default false,
@@ -81,8 +82,68 @@ create table if not exists public.products (
   updated_at timestamptz not null default now()
 );
 
+-- Safe to re-run on a database created before this or product tags existed.
+alter table public.products add column if not exists tags text[] default '{}'::text[];
+
 create index if not exists products_category_idx on public.products (category);
 create index if not exists products_brand_idx on public.products (brand);
+
+-- ---------- Homepage billboard (Hero carousel) ----------
+-- Configurable by an admin at /admin/billboard, instead of the hardcoded
+-- generic slides the storefront shipped with. Each row is one slide; how
+-- its product/visual is picked depends on `mode`:
+--   'manual'   -> product_id: one specific, admin-picked product
+--   'category' -> category: a product picked from that category
+--   'tag'      -> tag: a product picked that carries this tag (see
+--                 products.tags above)
+--   'random'   -> ignores product_id/category/tag: a random product from
+--                 the whole live catalog, re-picked on every homepage load
+-- Copy fields (eyebrow/title/...) are optional per-slide overrides; when
+-- left blank the storefront derives sensible copy from the resolved
+-- product. If this table has zero enabled rows, the storefront falls back
+-- to a small built-in default so the homepage is never empty.
+do $$
+begin
+  if not exists (select 1 from pg_type where typname = 'billboard_slide_mode') then
+    create type public.billboard_slide_mode as enum ('manual', 'category', 'tag', 'random');
+  end if;
+end $$;
+
+create table if not exists public.homepage_billboard_slides (
+  id uuid primary key default gen_random_uuid(),
+  sort_order integer not null default 0,
+  enabled boolean not null default true,
+  mode public.billboard_slide_mode not null default 'manual',
+  product_id uuid references public.products(id) on delete set null,
+  category text,
+  tag text,
+  eyebrow text,
+  title text,
+  highlight text,
+  subtitle text,
+  primary_label text,
+  primary_href text,
+  secondary_label text,
+  secondary_href text,
+  theme text not null default 'brand',
+  background_image text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists homepage_billboard_slides_sort_idx on public.homepage_billboard_slides (sort_order);
+
+-- Safe to re-run on a database created before the background-image option
+-- existed on billboard slides.
+alter table public.homepage_billboard_slides add column if not exists background_image text;
+
+alter table public.homepage_billboard_slides enable row level security;
+
+-- Public read, but only of enabled slides — same reasoning as "products:
+-- public read" above. Writes are admin-only via the service-role key.
+drop policy if exists "homepage_billboard_slides: public read enabled" on public.homepage_billboard_slides;
+create policy "homepage_billboard_slides: public read enabled" on public.homepage_billboard_slides
+  for select using (enabled = true);
 
 -- ---------- Orders ----------
 -- CREATE TYPE has no IF NOT EXISTS in Postgres, so guard each one manually —

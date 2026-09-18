@@ -9,7 +9,7 @@ export interface ProductFormState {
   error?: string;
 }
 
-import { parseSpecs } from "@/lib/product-form-helpers";
+import { parseSpecs, parseTags } from "@/lib/product-form-helpers";
 
 function num(fd: FormData, key: string): number | null {
   const raw = fd.get(key);
@@ -43,6 +43,7 @@ export async function createProduct(_prev: ProductFormState, formData: FormData)
     key_spec: String(formData.get("keySpec") ?? "").trim() || null,
     warranty: String(formData.get("warranty") ?? "").trim() || null,
     specs: parseSpecs(String(formData.get("specs") ?? "")),
+    tags: parseTags(String(formData.get("tags") ?? "")),
     is_featured: formData.get("isFeatured") === "on",
     is_best_seller: formData.get("isBestSeller") === "on",
     is_deal: formData.get("isDeal") === "on",
@@ -87,6 +88,7 @@ export async function updateProduct(
       key_spec: String(formData.get("keySpec") ?? "").trim() || null,
       warranty: String(formData.get("warranty") ?? "").trim() || null,
       specs: parseSpecs(String(formData.get("specs") ?? "")),
+      tags: parseTags(String(formData.get("tags") ?? "")),
       is_featured: formData.get("isFeatured") === "on",
       is_best_seller: formData.get("isBestSeller") === "on",
       is_deal: formData.get("isDeal") === "on",

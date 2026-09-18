@@ -10,11 +10,14 @@ import { BrandStrip } from "@/components/home/BrandStrip";
 import { OurServices } from "@/components/home/OurServices";
 import { WhyChooseUs } from "@/components/home/WhyChooseUs";
 import { Newsletter } from "@/components/home/Newsletter";
+import { getHomepageBillboardSlides } from "@/lib/billboard";
 
-export default function Home() {
+export default async function Home() {
+  const slides = await getHomepageBillboardSlides();
+
   return (
     <Container className="space-y-14 py-6 lg:space-y-20 lg:py-8">
-      <Hero />
+      <Hero slides={slides} />
       <UspStrip />
       <CategoryStrip />
       <DealsOfDay />

@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import { categories } from "@/lib/data/categories";
-import { specsToText } from "@/lib/product-form-helpers";
+import { specsToText, tagsToText } from "@/lib/product-form-helpers";
 import { ImageUploadField } from "./ImageUploadField";
 import type { Product } from "@/lib/types";
 import type { ProductFormState } from "@/lib/actions/products";
@@ -50,6 +50,9 @@ export function ProductForm({
         </div>
         <Field label="Key Spec (short highlight)">
           <input name="keySpec" defaultValue={initial?.keySpec} className={inputClass} placeholder="e.g. Ryzen 7 · 16GB · RTX 4060" />
+        </Field>
+        <Field label="Tags (comma-separated — used to target this product from the homepage billboard)">
+          <input name="tags" defaultValue={tagsToText(initial?.tags)} className={inputClass} placeholder="e.g. eid-sale, student-offer, back-to-school" />
         </Field>
       </div>
 

@@ -15,12 +15,12 @@ export async function POST(request: Request) {
   const tranId = form.get("tran_id")?.toString();
 
   if (!valId || !tranId) {
-    return NextResponse.redirect(`${origin}/checkout?error=invalid_payment_response`);
+    return NextResponse.redirect(`${origin}/checkout?error=invalid_payment_response`, 303);
   }
 
   const config = await getSslcommerzConfig();
   if (!config) {
-    return NextResponse.redirect(`${origin}/checkout?error=payment_not_configured`);
+    return NextResponse.redirect(`${origin}/checkout?error=payment_not_configured`, 303);
   }
   const { storeId, storePassword, sandbox: isSandbox } = config;
   const validationUrl = isSandbox
@@ -46,7 +46,7 @@ export async function POST(request: Request) {
       .single();
 
     if (!order) {
-      return NextResponse.redirect(`${origin}/checkout?error=order_not_found`);
+      return NextResponse.redirect(`${origin}/checkout?error=order_not_found`, 303);
     }
 
     const isValid =
@@ -57,7 +57,7 @@ export async function POST(request: Request) {
     if (!isValid) {
       console.error("SSLCommerz validation mismatch:", data);
       await supabase.from("orders").update({ payment_status: "failed" }).eq("id", order.id);
-      return NextResponse.redirect(`${origin}/checkout?error=payment_verification_failed`);
+      return NextResponse.redirect(`${origin}/checkout?error=payment_verification_failed`, 303);
     }
 
     await supabase
@@ -69,10 +69,10 @@ export async function POST(request: Request) {
       })
       .eq("id", order.id);
 
-    return NextResponse.redirect(`${origin}/checkout/success?order=${tranId}`);
+    return NextResponse.redirect(`${origin}/checkout/success?order=${tranId}`, 303);
   } catch (err) {
     console.error("SSLCommerz validation request error:", err);
-    return NextResponse.redirect(`${origin}/checkout?error=payment_verification_failed`);
+    return NextResponse.redirect(`${origin}/checkout?error=payment_verification_failed`, 303);
   }
 }
 

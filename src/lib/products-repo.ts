@@ -23,6 +23,7 @@ type ProductRow = {
   is_best_seller: boolean | null;
   is_deal: boolean | null;
   deal_ends_at: string | null;
+  tags: string[] | null;
 };
 
 function mapRow(row: ProductRow): Product {
@@ -46,6 +47,7 @@ function mapRow(row: ProductRow): Product {
     isBestSeller: row.is_best_seller ?? undefined,
     isDeal: row.is_deal ?? undefined,
     dealEndsAt: row.deal_ends_at ?? undefined,
+    tags: row.tags ?? undefined,
   };
 }
 

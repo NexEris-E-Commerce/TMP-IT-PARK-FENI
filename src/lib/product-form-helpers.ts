@@ -20,3 +20,16 @@ export function parseSpecs(raw: string): SpecPair[] {
 export function specsToText(specs: SpecPair[] | null | undefined): string {
   return (specs ?? []).map((s) => `${s.label}: ${s.value}`).join("\n");
 }
+
+/** Parses a comma-separated "eid-sale, student-offer" input into tags. */
+export function parseTags(raw: string): string[] {
+  return raw
+    .split(",")
+    .map((t) => t.trim().toLowerCase())
+    .filter(Boolean);
+}
+
+/** Reverse of parseTags — used to pre-fill the input when editing. */
+export function tagsToText(tags: string[] | null | undefined): string {
+  return (tags ?? []).join(", ");
+}

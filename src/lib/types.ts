@@ -66,6 +66,8 @@ export interface Product {
   isFeatured?: boolean;
   isBestSeller?: boolean;
   isDeal?: boolean;
+  /** Free-form labels (e.g. "eid-sale", "student-offer") — used to target this product from the homepage billboard, and for the admin's own organization. */
+  tags?: string[];
   /** ISO timestamp; drives the Deals-of-the-Day countdown when set. */
   dealEndsAt?: string;
 }
