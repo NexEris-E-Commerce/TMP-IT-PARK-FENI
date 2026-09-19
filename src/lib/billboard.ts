@@ -3,7 +3,7 @@ import { cache } from "react";
 import type { IconKey, Product } from "./types";
 import { createClient } from "./supabase/server";
 import { getAllProducts } from "./products-repo";
-import { getBillboardTheme } from "./billboard-themes";
+import { gradientCss } from "./billboard-color-utils";
 import { formatBDT } from "./format";
 
 export interface BillboardSlide {
@@ -13,19 +13,50 @@ export interface BillboardSlide {
   subtitle: string;
   primary: { label: string; href: string };
   secondary: { label: string; href: string };
-  gradient: string;
-  glow: string;
+  /** CSS linear-gradient() value for the slide background (from the chosen theme). */
+  gradientCss: string;
+  glowColor: string;
+  eyebrowColor: string;
+  titleColor: string;
+  highlightColor: string;
+  subtitleColor: string;
+  /** Base color for the translucent backdrop panel behind the copy when there's a background photo — always used at reduced opacity, never solid. */
+  plaqueColor: string;
   category: IconKey;
   product: string;
   price: string;
   rating: number;
   /** Real product photo — when present, the storefront shows this instead of the generic category icon in the product mock card. */
   productImage?: string;
-  /** Custom full-bleed background photo for the slide — when present, this replaces the solid gradient (still tinted with the theme gradient for text contrast). */
+  /** Custom full-bleed background photo for the slide — when present, this replaces the solid gradient. */
   backgroundImage?: string;
 }
 
 type SlideMode = "manual" | "category" | "tag" | "random";
+
+interface ThemeRow {
+  gradient_from: string;
+  gradient_via: string | null;
+  gradient_to: string;
+  glow_color: string;
+  eyebrow_color: string;
+  title_color: string;
+  highlight_color: string;
+  subtitle_color: string;
+  plaque_color: string;
+}
+
+const FALLBACK_THEME: ThemeRow = {
+  gradient_from: "#2239bb",
+  gradient_via: "#2a49dd",
+  gradient_to: "#6a3cef",
+  glow_color: "#9174ff",
+  eyebrow_color: "#ffffff",
+  title_color: "#ffffff",
+  highlight_color: "#ffffff",
+  subtitle_color: "#e5e7eb",
+  plaque_color: "#000000",
+};
 
 interface SlideRow {
   id: string;
@@ -41,8 +72,12 @@ interface SlideRow {
   primary_href: string | null;
   secondary_label: string | null;
   secondary_href: string | null;
-  theme: string | null;
   background_image: string | null;
+  eyebrow_color: string | null;
+  title_color: string | null;
+  highlight_color: string | null;
+  subtitle_color: string | null;
+  billboard_themes: ThemeRow | null;
 }
 
 const KNOWN_ICON_KEYS: IconKey[] = [
@@ -88,7 +123,7 @@ function resolveProductForRow(row: SlideRow, allProducts: Product[]): Product | 
 }
 
 function buildSlide(row: SlideRow, product: Product): BillboardSlide {
-  const theme = getBillboardTheme(row.theme);
+  const theme = row.billboard_themes ?? FALLBACK_THEME;
   const categoryHref = `/shop?category=${encodeURIComponent(product.category)}`;
 
   return {
@@ -104,8 +139,18 @@ function buildSlide(row: SlideRow, product: Product): BillboardSlide {
       label: row.secondary_label?.trim() || "View All",
       href: row.secondary_href?.trim() || categoryHref,
     },
-    gradient: theme.gradient,
-    glow: theme.glow,
+    gradientCss: gradientCss({
+      gradientFrom: theme.gradient_from,
+      gradientVia: theme.gradient_via,
+      gradientTo: theme.gradient_to,
+    }),
+    glowColor: theme.glow_color,
+    // Per-slide overrides win over the theme's own colors when set.
+    eyebrowColor: row.eyebrow_color?.trim() || theme.eyebrow_color,
+    titleColor: row.title_color?.trim() || theme.title_color,
+    highlightColor: row.highlight_color?.trim() || theme.highlight_color,
+    subtitleColor: row.subtitle_color?.trim() || theme.subtitle_color,
+    plaqueColor: theme.plaque_color,
     category: toIconKey(product.category),
     product: product.name,
     price: formatBDT(product.price),
@@ -127,8 +172,13 @@ export const DEFAULT_BILLBOARD_SLIDES: BillboardSlide[] = [
       "Hand-picked components, expert assembly and genuine warranty — configure your dream rig with our smart PC Builder.",
     primary: { label: "Start Building", href: "/pc-builder" },
     secondary: { label: "Shop Components", href: "/shop?category=components" },
-    gradient: "from-brand-700 via-brand-600 to-accent-600",
-    glow: "bg-accent-400/40",
+    gradientCss: gradientCss({ gradientFrom: "#2239bb", gradientVia: "#2a49dd", gradientTo: "#6a3cef" }),
+    glowColor: "#9174ff",
+    eyebrowColor: "#ffffff",
+    titleColor: "#ffffff",
+    highlightColor: "#ffffff",
+    subtitleColor: "#e5e7eb",
+    plaqueColor: "#000000",
     category: "gaming",
     product: "Custom Gaming PC",
     price: "৳85,000",
@@ -142,8 +192,13 @@ export const DEFAULT_BILLBOARD_SLIDES: BillboardSlide[] = [
       "From everyday work to high-end creation — authorized brands, honest pricing and after-sales support you can trust.",
     primary: { label: "Shop Laptops", href: "/shop?category=laptop" },
     secondary: { label: "View All Deals", href: "/deals" },
-    gradient: "from-accent-700 via-brand-700 to-brand-600",
-    glow: "bg-brand-300/40",
+    gradientCss: gradientCss({ gradientFrom: "#5b2fd1", gradientVia: "#2239bb", gradientTo: "#2a49dd" }),
+    glowColor: "#90b0ff",
+    eyebrowColor: "#ffffff",
+    titleColor: "#ffffff",
+    highlightColor: "#ffffff",
+    subtitleColor: "#e5e7eb",
+    plaqueColor: "#000000",
     category: "laptop",
     product: "Business Laptops",
     price: "৳62,000",
@@ -157,8 +212,13 @@ export const DEFAULT_BILLBOARD_SLIDES: BillboardSlide[] = [
       "GPUs, monitors, mechanical keyboards and more. Everything you need for a competitive edge, in stock in Feni.",
     primary: { label: "Shop Gaming", href: "/shop?category=gaming" },
     secondary: { label: "Explore Monitors", href: "/shop?category=monitor" },
-    gradient: "from-ink via-brand-800 to-accent-700",
-    glow: "bg-accent-500/40",
+    gradientCss: gradientCss({ gradientFrom: "#0f1b33", gradientVia: "#223397", gradientTo: "#5b2fd1" }),
+    glowColor: "#7a54fb",
+    eyebrowColor: "#ffffff",
+    titleColor: "#ffffff",
+    highlightColor: "#ffffff",
+    subtitleColor: "#e5e7eb",
+    plaqueColor: "#000000",
     category: "components",
     product: "RTX Graphics Cards",
     price: "৳38,500",
@@ -182,7 +242,7 @@ export const getHomepageBillboardSlides = cache(async (): Promise<BillboardSlide
     const { data, error } = await supabase
       .from("homepage_billboard_slides")
       .select(
-        "id, mode, product_id, category, tag, eyebrow, title, highlight, subtitle, primary_label, primary_href, secondary_label, secondary_href, theme, background_image",
+        "id, mode, product_id, category, tag, eyebrow, title, highlight, subtitle, primary_label, primary_href, secondary_label, secondary_href, background_image, eyebrow_color, title_color, highlight_color, subtitle_color, billboard_themes(gradient_from, gradient_via, gradient_to, glow_color, eyebrow_color, title_color, highlight_color, subtitle_color, plaque_color)",
       )
       .eq("enabled", true)
       .order("sort_order", { ascending: true });
@@ -193,7 +253,7 @@ export const getHomepageBillboardSlides = cache(async (): Promise<BillboardSlide
     }
 
     const allProducts = await getAllProducts();
-    const resolved = (data as SlideRow[])
+    const resolved = (data as unknown as SlideRow[])
       .map((row) => {
         const product = resolveProductForRow(row, allProducts);
         return product ? buildSlide(row, product) : null;

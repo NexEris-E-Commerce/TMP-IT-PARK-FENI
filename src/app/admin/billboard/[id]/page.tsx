@@ -6,6 +6,7 @@ import {
   getProductPickerOptions,
   updateBillboardSlide,
 } from "@/lib/actions/billboard";
+import { getBillboardThemes } from "@/lib/actions/billboard-themes";
 import { BillboardSlideForm } from "@/components/admin/BillboardSlideForm";
 import { ChevronRight } from "@/components/ui/icons";
 
@@ -13,10 +14,11 @@ export const metadata = { title: "Edit Slide · Billboard" };
 
 export default async function EditBillboardSlidePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const [slides, products, existingTags] = await Promise.all([
+  const [slides, products, existingTags, themes] = await Promise.all([
     getAdminBillboardSlides(),
     getProductPickerOptions(),
     getDistinctProductTags(),
+    getBillboardThemes(),
   ]);
 
   const slide = slides.find((s) => s.id === id);
@@ -35,13 +37,14 @@ export default async function EditBillboardSlidePage({ params }: { params: Promi
       </nav>
       <h1 className="mt-3 font-display text-2xl font-extrabold tracking-tight text-ink">Edit Slide</h1>
 
-      <div className="mt-6 max-w-3xl">
+      <div className="mt-6 max-w-5xl">
         <BillboardSlideForm
           action={boundAction}
           initial={slide}
           submitLabel="Save Changes"
           products={products}
           existingTags={existingTags}
+          themes={themes}
         />
       </div>
     </div>

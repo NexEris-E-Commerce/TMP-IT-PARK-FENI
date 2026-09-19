@@ -31,12 +31,20 @@ export default async function AdminBillboardPage() {
             product, a category, a product tag, or a random pick — instead of the generic default.
           </p>
         </div>
-        <Link
-          href="/admin/billboard/new"
-          className="inline-flex h-10 items-center rounded-xl bg-brand-600 px-4 text-sm font-bold text-white transition hover:bg-brand-700"
-        >
-          + Add Slide
-        </Link>
+        <div className="flex flex-wrap items-center gap-2">
+          <Link
+            href="/admin/billboard/themes"
+            className="inline-flex h-10 items-center rounded-xl border border-line-strong px-4 text-sm font-semibold text-ink transition hover:bg-muted"
+          >
+            Manage Themes
+          </Link>
+          <Link
+            href="/admin/billboard/new"
+            className="inline-flex h-10 items-center rounded-xl bg-brand-600 px-4 text-sm font-bold text-white transition hover:bg-brand-700"
+          >
+            + Add Slide
+          </Link>
+        </div>
       </div>
 
       <div className="mt-6 overflow-x-auto rounded-2xl border border-line bg-surface">

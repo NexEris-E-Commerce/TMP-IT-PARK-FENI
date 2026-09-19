@@ -109,6 +109,44 @@ begin
   end if;
 end $$;
 
+-- Reusable color presets for slides ("themes"). Seeded with 3 built-in ones
+-- (is_builtin = true, can't be deleted from the admin UI) plus whatever
+-- custom combos an admin saves from /admin/billboard/themes or straight
+-- from a slide's color pickers — those become pickable on every future
+-- slide, which is the whole point of naming and saving them.
+create table if not exists public.billboard_themes (
+  id uuid primary key default gen_random_uuid(),
+  slug text unique,                    -- only set for the 3 built-ins, used to migrate old data below
+  name text not null,
+  is_builtin boolean not null default false,
+  gradient_from text not null default '#2239bb',
+  gradient_via text,
+  gradient_to text not null default '#6a3cef',
+  glow_color text not null default '#9174ff',
+  eyebrow_color text not null default '#ffffff',
+  title_color text not null default '#ffffff',
+  highlight_color text not null default '#ffffff',
+  subtitle_color text not null default '#e5e7eb',
+  plaque_color text not null default '#000000',
+  created_at timestamptz not null default now()
+);
+
+alter table public.billboard_themes enable row level security;
+
+-- Public read (the homepage needs to resolve a slide's theme colors with
+-- the anon key, same reasoning as products/slides above). Writes are
+-- admin-only via the service-role key.
+drop policy if exists "billboard_themes: public read" on public.billboard_themes;
+create policy "billboard_themes: public read" on public.billboard_themes
+  for select using (true);
+
+insert into public.billboard_themes (slug, name, is_builtin, gradient_from, gradient_via, gradient_to, glow_color, subtitle_color)
+values
+  ('brand', 'Brand Blue', true, '#2239bb', '#2a49dd', '#6a3cef', '#9174ff', '#e5e7eb'),
+  ('accent', 'Accent Purple', true, '#5b2fd1', '#2239bb', '#2a49dd', '#90b0ff', '#e5e7eb'),
+  ('dark', 'Deep Ink', true, '#0f1b33', '#223397', '#5b2fd1', '#7a54fb', '#e5e7eb')
+on conflict (slug) do nothing;
+
 create table if not exists public.homepage_billboard_slides (
   id uuid primary key default gen_random_uuid(),
   sort_order integer not null default 0,
@@ -125,17 +163,53 @@ create table if not exists public.homepage_billboard_slides (
   primary_href text,
   secondary_label text,
   secondary_href text,
-  theme text not null default 'brand',
+  theme_id uuid references public.billboard_themes(id) on delete set null,
   background_image text,
+  -- Optional per-slide overrides on top of the chosen theme's colors —
+  -- null means "use the theme's color for this". Admin-picked directly,
+  -- nothing auto-detected from the photo.
+  eyebrow_color text,
+  title_color text,
+  highlight_color text,
+  subtitle_color text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
 
 create index if not exists homepage_billboard_slides_sort_idx on public.homepage_billboard_slides (sort_order);
 
--- Safe to re-run on a database created before the background-image option
--- existed on billboard slides.
+-- Safe to re-run on a database created before any of these existed.
 alter table public.homepage_billboard_slides add column if not exists background_image text;
+alter table public.homepage_billboard_slides add column if not exists theme_id uuid references public.billboard_themes(id) on delete set null;
+alter table public.homepage_billboard_slides add column if not exists eyebrow_color text;
+alter table public.homepage_billboard_slides add column if not exists title_color text;
+alter table public.homepage_billboard_slides add column if not exists highlight_color text;
+alter table public.homepage_billboard_slides add column if not exists subtitle_color text;
+
+-- One-time migration from the old fixed-3-theme `theme` text column (and
+-- the auto-detected `text_theme` column, since detection was dropped) to
+-- the new theme_id + manual color overrides. Safe to re-run: only touches
+-- rows that still need it, and both source columns are dropped at the end
+-- so this block becomes a no-op on repeat runs.
+do $$
+begin
+  if exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'homepage_billboard_slides' and column_name = 'theme') then
+    update public.homepage_billboard_slides s
+    set theme_id = t.id
+    from public.billboard_themes t
+    where s.theme_id is null and t.slug = s.theme;
+
+    update public.homepage_billboard_slides
+    set theme_id = (select id from public.billboard_themes where slug = 'brand')
+    where theme_id is null;
+
+    alter table public.homepage_billboard_slides drop column theme;
+  end if;
+
+  if exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'homepage_billboard_slides' and column_name = 'text_theme') then
+    alter table public.homepage_billboard_slides drop column text_theme;
+  end if;
+end $$;
 
 alter table public.homepage_billboard_slides enable row level security;
 

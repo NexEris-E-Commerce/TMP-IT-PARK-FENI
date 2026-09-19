@@ -26,8 +26,12 @@ export interface AdminBillboardSlideRow {
   primaryHref: string | null;
   secondaryLabel: string | null;
   secondaryHref: string | null;
-  theme: string;
+  themeId: string | null;
   backgroundImage: string | null;
+  eyebrowColor: string | null;
+  titleColor: string | null;
+  highlightColor: string | null;
+  subtitleColor: string | null;
 }
 
 /** All slides (enabled or not), for the /admin/billboard list + edit forms. */
@@ -62,17 +66,44 @@ export async function getAdminBillboardSlides(): Promise<AdminBillboardSlideRow[
     primaryHref: row.primary_href,
     secondaryLabel: row.secondary_label,
     secondaryHref: row.secondary_href,
-    theme: row.theme,
+    themeId: row.theme_id,
     backgroundImage: row.background_image,
+    eyebrowColor: row.eyebrow_color,
+    titleColor: row.title_color,
+    highlightColor: row.highlight_color,
+    subtitleColor: row.subtitle_color,
   }));
 }
 
-/** For the "Specific Product" mode picker — id + name only, cheapest query. */
-export async function getProductPickerOptions(): Promise<{ id: string; name: string }[]> {
+/** For the "Specific Product" mode picker, and to drive the live preview when that product is selected. */
+export interface ProductPickerOption {
+  id: string;
+  name: string;
+  price: number;
+  image: string | null;
+  rating: number | null;
+  category: string;
+  keySpec: string | null;
+  slug: string;
+}
+
+export async function getProductPickerOptions(): Promise<ProductPickerOption[]> {
   await requireAdmin();
   const supabase = createAdminClient();
-  const { data } = await supabase.from("products").select("id, name").order("name", { ascending: true });
-  return data ?? [];
+  const { data } = await supabase
+    .from("products")
+    .select("id, name, price, image, rating, category, key_spec, slug")
+    .order("name", { ascending: true });
+  return (data ?? []).map((p) => ({
+    id: p.id,
+    name: p.name,
+    price: p.price,
+    image: p.image,
+    rating: p.rating,
+    category: p.category,
+    keySpec: p.key_spec,
+    slug: p.slug,
+  }));
 }
 
 /** For the "Tag" mode's autocomplete — every distinct tag currently in use. */
@@ -87,8 +118,16 @@ export async function getDistinctProductTags(): Promise<string[]> {
   return Array.from(set).sort();
 }
 
+const HEX_RE = /^#[0-9a-fA-F]{6}$/;
+
 function buildPayload(formData: FormData) {
   const mode = String(formData.get("mode") ?? "manual") as "manual" | "category" | "tag" | "random";
+  const themeId = String(formData.get("themeId") ?? "").trim() || null;
+
+  const colorOverride = (field: string) => {
+    const v = String(formData.get(field) ?? "").trim();
+    return v && HEX_RE.test(v) ? v : null;
+  };
 
   return {
     mode,
@@ -103,8 +142,12 @@ function buildPayload(formData: FormData) {
     primary_href: String(formData.get("primaryHref") ?? "").trim() || null,
     secondary_label: String(formData.get("secondaryLabel") ?? "").trim() || null,
     secondary_href: String(formData.get("secondaryHref") ?? "").trim() || null,
-    theme: String(formData.get("theme") ?? "brand").trim() || "brand",
+    theme_id: themeId,
     background_image: String(formData.get("backgroundImage") ?? "").trim() || null,
+    eyebrow_color: colorOverride("eyebrowColor"),
+    title_color: colorOverride("titleColor"),
+    highlight_color: colorOverride("highlightColor"),
+    subtitle_color: colorOverride("subtitleColor"),
     enabled: formData.get("enabled") === "on",
   };
 }
@@ -113,6 +156,7 @@ function validate(payload: ReturnType<typeof buildPayload>): string | null {
   if (payload.mode === "manual" && !payload.product_id) return "Pick a product for \"Specific Product\" mode.";
   if (payload.mode === "category" && !payload.category) return "Pick a category for \"Category\" mode.";
   if (payload.mode === "tag" && !payload.tag) return "Enter a tag for \"Tag\" mode.";
+  if (!payload.theme_id) return "Pick a theme.";
   return null;
 }
 

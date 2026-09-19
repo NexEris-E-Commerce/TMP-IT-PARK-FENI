@@ -12,12 +12,19 @@ const inputClass =
 export function ImageUploadField({
   defaultValue,
   name = "image",
+  onValueChange,
 }: {
   defaultValue?: string;
   /** Form field name for the hidden input this submits. Defaults to "image" (used by the product form). */
   name?: string;
+  /** Optional — called whenever the image URL changes (upload, paste, or remove), so a parent can mirror it into its own state (e.g. for a live preview). */
+  onValueChange?: (url: string) => void;
 }) {
-  const [url, setUrl] = useState(defaultValue ?? "");
+  const [url, setUrlState] = useState(defaultValue ?? "");
+  const setUrl = (next: string) => {
+    setUrlState(next);
+    onValueChange?.(next);
+  };
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
