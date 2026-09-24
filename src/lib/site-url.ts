@@ -4,7 +4,8 @@
  *
  * Priority:
  * 1. NEXT_PUBLIC_SITE_URL — set this in Vercel once the real domain
- *    (e.g. itparkfeni.com) is connected. Takes priority over everything.
+ *    (e.g. nexerisltd.vercel.app or a custom domain) is connected. Takes
+ *    priority over everything.
  * 2. VERCEL_PROJECT_PRODUCTION_URL — Vercel sets this automatically to the
  *    project's production domain, so this works correctly even before a
  *    custom domain is added (falls back to the *.vercel.app URL).

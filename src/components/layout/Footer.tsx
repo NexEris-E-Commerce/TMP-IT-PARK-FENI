@@ -3,9 +3,9 @@ import { site, footerColumns, paymentMethods } from "@/lib/site";
 import { formatPhone } from "@/lib/format";
 import { Container } from "../ui/Container";
 import { Logo } from "../ui/Logo";
-import { Phone, MapPin, ChevronRight, Facebook, Instagram, YouTube } from "../ui/icons";
+import { Phone, MapPin, ChevronRight, Facebook, Instagram, YouTube, GitHub } from "../ui/icons";
 
-const socialIcon = { facebook: Facebook, instagram: Instagram, youtube: YouTube } as const;
+const socialIcon = { facebook: Facebook, instagram: Instagram, youtube: YouTube, github: GitHub } as const;
 
 const payTone: Record<string, string> = {
   bKash: "text-[#e2136e]",
@@ -123,7 +123,8 @@ export function Footer() {
             © {year} {site.fullName}. All rights reserved.
           </p>
           <p>
-            {site.tagline} — {site.taglineBn}
+            {site.tagline}
+            {site.taglineBn ? ` — ${site.taglineBn}` : ""}
           </p>
         </Container>
       </div>

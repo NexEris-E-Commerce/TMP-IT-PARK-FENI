@@ -23,7 +23,7 @@ export function SearchConsoleSettingsForm({ initial }: { initial: SearchConsoleS
     <form action={formAction} className="space-y-6 rounded-2xl border border-line bg-surface p-5 sm:p-6">
       <p className="text-sm text-ink-soft">
         Google Search Console lets you verify ownership of{" "}
-        <span className="font-semibold text-ink">itparkfeni.vercel.app</span> in a few different ways. Use whichever
+        <span className="font-semibold text-ink">nexerisltd.vercel.app</span> in a few different ways. Use whichever
         one Google shows you when you add the property — you only need one, but you can fill in more than one.
       </p>
 

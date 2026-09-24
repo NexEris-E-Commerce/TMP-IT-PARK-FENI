@@ -65,7 +65,6 @@ export async function generateMetadata(): Promise<Metadata> {
     description: site.description,
     applicationName: site.fullName,
     keywords: [
-      "IT Park Feni",
       "computer shop Feni",
       "laptop Feni",
       "gaming PC Bangladesh",

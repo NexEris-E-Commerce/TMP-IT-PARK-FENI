@@ -1,7 +1,7 @@
 import type { SVGProps } from "react";
 
 /**
- * Inline SVG icon set for IT PARK FENI — no external icon dependency.
+ * Inline SVG icon set — no external icon dependency.
  * Stroke icons inherit `currentColor`; pass `size` or `className` to size.
  */
 
@@ -148,5 +148,10 @@ export const Instagram = ({ size = 20, ...p }: IconProps) => (
 export const YouTube = ({ size = 20, ...p }: IconProps) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...p}>
     <path d="M22.5 8.2a2.9 2.9 0 0 0-2-2C18.7 5.7 12 5.7 12 5.7s-6.7 0-8.5.5a2.9 2.9 0 0 0-2 2A30 30 0 0 0 1 12a30 30 0 0 0 .5 3.8 2.9 2.9 0 0 0 2 2c1.8.5 8.5.5 8.5.5s6.7 0 8.5-.5a2.9 2.9 0 0 0 2-2A30 30 0 0 0 23 12a30 30 0 0 0-.5-3.8ZM9.8 15.3V8.7l5.7 3.3Z" />
+  </svg>
+);
+export const GitHub = ({ size = 20, ...p }: IconProps) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...p}>
+    <path d="M12 .5C5.73.5.5 5.73.5 12c0 5.08 3.29 9.39 7.86 10.91.58.1.79-.25.79-.56 0-.28-.01-1.02-.02-2-3.2.7-3.88-1.54-3.88-1.54-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.71.08-.71 1.17.08 1.78 1.2 1.78 1.2 1.03 1.77 2.71 1.26 3.37.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.68 0-1.25.45-2.28 1.19-3.08-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.79 0c2.2-1.49 3.17-1.18 3.17-1.18.64 1.59.24 2.76.12 3.05.74.8 1.18 1.83 1.18 3.08 0 4.41-2.69 5.38-5.25 5.67.41.36.78 1.07.78 2.16 0 1.56-.01 2.82-.01 3.2 0 .31.21.67.8.56A10.52 10.52 0 0 0 23.5 12c0-6.27-5.23-11.5-11.5-11.5Z" />
   </svg>
 );

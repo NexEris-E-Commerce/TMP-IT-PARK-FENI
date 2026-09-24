@@ -1,34 +1,34 @@
 import type { NavItem, ServiceItem, Usp } from "./types";
 
 /**
- * Central business + site configuration for IT PARK FENI.
+ * Central business + site configuration for the storefront.
  * In Phase 5 most of this becomes admin-editable (Settings / Homepage CMS);
  * for now it is the single source of truth for the storefront chrome.
  */
 
 export const site = {
-  name: "IT PARK",
-  fullName: "IT PARK FENI",
-  tagline: "Complete IT Solution",
-  taglineBn: "সম্পূর্ণ আইটি সমাধান",
+  name: "MR. ARX",
+  fullName: "MR. ARX",
+  tagline: "Unleash Your Potential With Us",
+  taglineBn: "",
   description:
-    "Your trusted IT partner in Feni — genuine computers, components, gaming PCs, printers, networking and expert service.",
-  phone: "01974862253",
-  email: "itparkfeni@gmail.com",
+    "Your trusted technology partner — genuine computers, components, gaming PCs, printers, networking and expert service.",
+  phone: "+8801314307707",
+  email: "mr.arx.me@gmail.com",
   showrooms: [
     {
-      label: "Showroom-1 (1st Floor)",
-      address: "Shop# 39, 1st Floor, Mohipal Plaza, Mohipal, Feni",
+      label: "NexEris LTD",
+      address: "Hazari Road, Feni",
     },
     {
-      label: "Showroom-2 (3rd Floor)",
-      address: "Shop# 6-7, 3rd Floor, Mohipal Plaza, Mohipal, Feni 3900",
+      label: "ARX's Solution",
+      address: "Hazari Road, Feni",
     },
   ],
   socials: [
-    { name: "Facebook", href: "https://facebook.com", icon: "facebook" as const },
-    { name: "Instagram", href: "https://instagram.com", icon: "instagram" as const },
-    { name: "YouTube", href: "https://youtube.com", icon: "youtube" as const },
+    { name: "Facebook", href: "https://www.facebook.com/profile.php?id=61591789850779", icon: "facebook" as const },
+    { name: "Instagram", href: "https://www.instagram.com/mr.arx.me/", icon: "instagram" as const },
+    { name: "GitHub", href: "https://github.com/mrarxme", icon: "github" as const },
   ],
 } as const;
 

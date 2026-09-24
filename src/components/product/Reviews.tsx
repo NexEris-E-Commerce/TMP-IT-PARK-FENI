@@ -1,21 +1,11 @@
 import type { Product } from "@/lib/types";
 import { getReviewSummary } from "@/lib/data/reviews";
 import { Rating } from "../ui/Rating";
-import { Star, Check, ShieldCheck } from "../ui/icons";
-import { cn } from "@/lib/cn";
+import { Star, ShieldCheck } from "../ui/icons";
 import { WriteReviewButton } from "./WriteReviewButton";
 
-function initials(name: string): string {
-  return name
-    .split(" ")
-    .slice(0, 2)
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase();
-}
-
 export function Reviews({ product }: { product: Product }) {
-  const { average, total, distribution, reviews, shown } = getReviewSummary(product);
+  const { average, total, distribution } = getReviewSummary(product);
 
   if (total === 0) {
     return (
@@ -76,7 +66,7 @@ export function Reviews({ product }: { product: Product }) {
 
           <div className="mt-5 flex items-center gap-2 rounded-xl bg-success-soft px-3 py-2.5 text-xs font-medium text-success">
             <ShieldCheck size={16} className="shrink-0" />
-            Ratings aggregated from verified purchases.
+            Aggregate rating shown for this product.
           </div>
 
           <div className="mt-4">
@@ -84,46 +74,11 @@ export function Reviews({ product }: { product: Product }) {
           </div>
         </div>
 
-        {/* Review list */}
-        <div className="space-y-5">
-          <p className="text-sm text-ink-dim">
-            Showing {shown} of {total} reviews
+        {/* Individual review cards intentionally not shown — see reviews.ts note */}
+        <div className="flex min-h-[220px] items-center justify-center rounded-xl border border-dashed border-line-strong bg-canvas p-8 text-center">
+          <p className="max-w-xs text-sm text-ink-soft">
+            Individual customer reviews will appear here as shoppers post them.
           </p>
-          {reviews.map((r) => (
-            <article key={r.id} className="border-b border-line pb-5 last:border-0 last:pb-0">
-              <div className="flex items-start gap-3">
-                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-gradient-to-br from-brand-500 to-accent-600 text-sm font-bold text-white">
-                  {initials(r.author)}
-                </span>
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                    <span className="text-sm font-semibold text-ink">{r.author}</span>
-                    {r.verified && (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-success-soft px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-success">
-                        <Check size={10} strokeWidth={3} /> Verified
-                      </span>
-                    )}
-                    <span className="text-xs text-ink-dim">· {r.date}</span>
-                  </div>
-                  <div className="mt-1.5 flex">
-                    {[0, 1, 2, 3, 4].map((i) => (
-                      <Star
-                        key={i}
-                        size={14}
-                        filled={i < r.rating}
-                        className={cn(i < r.rating ? "text-amber-400" : "text-line-strong")}
-                      />
-                    ))}
-                  </div>
-                </div>
-              </div>
-              <h3 className="mt-3 text-sm font-bold text-ink">{r.title}</h3>
-              <p className="mt-1 text-sm leading-relaxed text-ink-soft">{r.body}</p>
-              <p className="mt-2.5 text-xs text-ink-dim">
-                {r.helpful} {r.helpful === 1 ? "person" : "people"} found this helpful
-              </p>
-            </article>
-          ))}
         </div>
       </div>
     </section>
