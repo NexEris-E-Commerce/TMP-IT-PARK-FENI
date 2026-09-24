@@ -1,8 +1,11 @@
 import { cn } from "@/lib/cn";
+import { site } from "@/lib/site";
 
 /**
- * IT PARK FENI brand lockup — a gradient "it" mark + wordmark + tagline.
- * A real uploaded logo can replace this in Phase 5 (Homepage CMS / Settings).
+ * Brand lockup — a gradient mark + wordmark + tagline. The tagline comes
+ * straight from site.tagline, so it always matches site.ts. The mark/
+ * wordmark text below is this brand's own (MR. ARX) — if the brand ever
+ * changes again, update the two literals below to match the new name.
  */
 export function Logo({
   className,
@@ -25,17 +28,17 @@ export function Logo({
         )}
       >
         <span className="font-display font-extrabold leading-none tracking-tight">
-          it
+          AX
         </span>
         <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-white/90" />
       </span>
       <span className="flex flex-col leading-none">
         <span className={cn("font-display font-extrabold tracking-tight text-ink", word)}>
-          IT <span className="text-accent-600">PARK</span>
+          MR. <span className="text-accent-600">ARX</span>
         </span>
         {showTagline && (
           <span className="mt-1 text-[9px] font-semibold uppercase tracking-[0.2em] text-ink-dim">
-            Complete IT Solution
+            {site.tagline}
           </span>
         )}
       </span>
